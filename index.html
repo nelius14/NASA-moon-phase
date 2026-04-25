@@ -122,14 +122,14 @@
     }
     .date {
       font-family: 'Inconsolata', monospace;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       letter-spacing: 0.18em;
       color: rgba(180,172,155,0.45);
       text-transform: uppercase;
     }
     .time {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(2rem, 18cqw, 12rem) ;
+      font-size: clamp(4rem, 9vw, 8rem);
       font-weight: 300;
       color: rgba(228,218,188,0.88);
       letter-spacing: -0.01em;
@@ -248,28 +248,9 @@
       <div class="phase-name" id="phase-name">—</div>
     </div>
 
-    <div class="divider"></div>
-
-    <div class="stats">
-      <div class="stat">
-        <span class="stat-value" id="illum">—</span>
-        <span class="stat-label">Illuminated</span>
-      </div>
-      <div class="stat">
-        <span class="stat-value" id="age">—</span>
-        <span class="stat-label">Day of cycle</span>
-      </div>
-      <div class="stat">
-        <span class="stat-value" id="next-full">—</span>
-        <span class="stat-label">Days to full moon</span>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <div>
-      <div class="events-label">Upcoming</div>
-      <div class="events" id="events"></div>
+    <div class="phase-block">
+      <div class="phase-label">Illuminated</div>
+      <div class="phase-name" id="illum">—</div>
     </div>
 
     <div class="credit">NASA SVS · Lunar Reconnaissance Orbiter · Public domain</div>
@@ -374,32 +355,6 @@ window.addEventListener('load', () => {
   // Text
   document.getElementById('phase-name').textContent = phaseName(phase);
   document.getElementById('illum').textContent       = Math.round(illum * 100) + '%';
-  document.getElementById('age').textContent         = age.toFixed(1) + ' d';
-  document.getElementById('next-full').textContent   = daysTo(age, 0.5).toFixed(1) + ' d';
-
-  // Events
-  const upcoming = [
-    { frac:0.25, label:'First Quarter', icon:'🌓' },
-    { frac:0.5,  label:'Full Moon',     icon:'🌕' },
-    { frac:0.75, label:'Last Quarter',  icon:'🌗' },
-    { frac:1.0,  label:'New Moon',      icon:'🌑' },
-  ]
-  .map(e => ({ ...e, days: daysTo(age, e.frac) }))
-  .sort((a, b) => a.days - b.days)
-  .slice(0, 3);
-
-  const evEl = document.getElementById('events');
-  upcoming.forEach(e => {
-    const d = document.createElement('div');
-    d.className = 'event';
-    d.innerHTML =
-      `<span class="event-icon">${e.icon}</span>` +
-      `<div class="event-text">` +
-        `<span class="event-name">${e.label}</span>` +
-        `<span class="event-days">in ${e.days.toFixed(1)} days</span>` +
-      `</div>`;
-    evEl.appendChild(d);
-  });
 });
 </script>
 </body>
