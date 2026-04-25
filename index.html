@@ -65,10 +65,9 @@
         width: 450px !important;
         height: 450px !important;
       }
-      .layout { gap: 2.5rem; padding: 1.5rem; }
-      .info { gap: 2.2rem; }
+      .layout { gap: 1.5rem; padding: 0.6rem 1rem; }
+      .info { gap: 1.6rem; }
       .date { font-size: 0.85rem; letter-spacing: 0.14em; }
-      .time { font-size: 7rem; }
       .phase-label { font-size: 0.75rem; letter-spacing: 0.14em; }
       .phase-name { font-size: 3rem; }
     }
@@ -86,7 +85,9 @@
     #moon-img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: none;
+      object-position: center;
+      transform: scale(2)
       display: block;
     }
 
@@ -129,7 +130,7 @@
     }
     .date {
       font-family: 'Inconsolata', monospace;
-      font-size: 0.68rem;
+      font-size: 3.2rem;
       letter-spacing: 0.18em;
       color: rgba(180,172,155,0.45);
       text-transform: uppercase;
@@ -362,6 +363,48 @@ window.addEventListener('load', () => {
   // Text
   document.getElementById('phase-name').textContent = phaseName(phase);
   document.getElementById('illum').textContent       = Math.round(illum * 100) + '%';
+
+  // Match time width to phase-name width using off-screen probe spans
+  document.fonts.ready.then(() => {
+    const phaseEl = document.getElementById('phase-name');
+    const timeEl  = document.getElementById('time-display');
+
+    // Measure actual rendered text width of the phase name
+    const cs = getComputedStyle(phaseEl);
+    const phaseProbe = document.createElement('span');
+    phaseProbe.style.cssText =
+      'position:absolute;visibility:hidden;white-space:nowrap;' +
+      'font-family:' + cs.fontFamily + ';' +
+      'font-size:'   + cs.fontSize   + ';' +
+      'font-weight:' + cs.fontWeight + ';' +
+      'font-style:'  + cs.fontStyle  + ';' +
+      'letter-spacing:' + cs.letterSpacing + ';';
+    phaseProbe.textContent = phaseEl.textContent;
+    document.body.appendChild(phaseProbe);
+    const target = phaseProbe.offsetWidth;
+    document.body.removeChild(phaseProbe);
+
+    // Binary search: find the font-size where time text hits that width
+    const ct = getComputedStyle(timeEl);
+    const timeProbe = document.createElement('span');
+    timeProbe.style.cssText =
+      'position:absolute;visibility:hidden;white-space:nowrap;' +
+      'font-family:' + ct.fontFamily + ';' +
+      'font-weight:' + ct.fontWeight + ';' +
+      'letter-spacing:' + ct.letterSpacing + ';';
+    timeProbe.textContent = timeEl.textContent;
+    document.body.appendChild(timeProbe);
+
+    let lo = 10, hi = 600;
+    while (hi - lo > 0.5) {
+      const mid = (lo + hi) / 2;
+      timeProbe.style.fontSize = mid + 'px';
+      if (timeProbe.offsetWidth < target) lo = mid;
+      else hi = mid;
+    }
+    document.body.removeChild(timeProbe);
+    timeEl.style.fontSize = Math.floor(lo) + 'px';
+  });
 });
 </script>
 </body>
