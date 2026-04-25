@@ -107,10 +107,11 @@
 
     /* ── Info panel ──────────────────────── */
     .info {
+      flex: 1;
+      min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 2.4rem;
-      min-width: 220px;
+      gap: 2rem;
     }
 
     /* date + time */
@@ -121,18 +122,19 @@
     }
     .date {
       font-family: 'Inconsolata', monospace;
-      font-size: 0.68rem;
+      font-size: 2rem;
       letter-spacing: 0.18em;
       color: rgba(180,172,155,0.45);
       text-transform: uppercase;
     }
     .time {
-      font-family: 'Inconsolata', monospace;
-      font-size: 2.6rem;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 18cqw, 12rem) ;
       font-weight: 300;
-      color: rgba(228,218,188,0.85);
-      letter-spacing: 0.04em;
+      color: rgba(228,218,188,0.88);
+      letter-spacing: -0.01em;
       line-height: 1;
+      white-space: nowrap;
     }
 
     /* phase */
@@ -149,10 +151,10 @@
       text-transform: uppercase;
     }
     .phase-name {
-      font-size: 2rem;
+      font-size: clamp(2rem, 4.5vw, 4rem);
       font-weight: 300;
       font-style: italic;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
       line-height: 1.1;
       color: rgba(228,218,188,0.92);
     }
