@@ -65,7 +65,7 @@
         width: 450px !important;
         height: 450px !important;
       }
-      .layout { gap: 1.5rem; padding: 0.6rem 1rem; }
+      .layout { gap: 2rem; padding: 0.6rem 1rem; }
       .info { gap: 1.6rem; }
       .date { font-size: 0.85rem; letter-spacing: 0.14em; }
       .phase-label { font-size: 0.75rem; letter-spacing: 0.14em; }
@@ -317,8 +317,11 @@ function frameUrl(phase) {
 // ── Clock ────────────────────────────────────────────────────
 function tick() {
   const n = new Date();
-  document.getElementById('date-display').textContent =
-    n.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' }).toUpperCase();
+  const dateEl = document.getElementById('date-display');
+  dateEl.innerHTML =
+    n.toLocaleDateString('en-GB', { weekday:'long' }).toUpperCase() +
+    '<br>' +
+    n.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }).toUpperCase();
   document.getElementById('time-display').textContent =
     n.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
 }
