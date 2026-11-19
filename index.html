@@ -332,11 +332,6 @@
       <div class="phase-name" id="phase-name">—</div>
     </div>
 
-    <div class="phase-block">
-      <div class="phase-label">Illuminated</div>
-      <div class="phase-name" id="illum">—</div>
-    </div>
-
     <div>
       <div class="panel" id="panel">
 
@@ -695,7 +690,7 @@ window.addEventListener('load', () => {
   let shownUrl = '';
   function renderMoon(bustCache) {
     const now = new Date();
-    const { phase, illum } = moonData(now);
+    const { phase } = moonData(now);
     const url = frameUrl(now);
     // Only touch the image when the frame changed (or on wake), so the photo never flickers.
     if (url !== shownUrl || bustCache) {
@@ -707,7 +702,6 @@ window.addEventListener('load', () => {
     renderDistance(now);
     renderCycle(now);
     document.getElementById('phase-name').textContent = phaseName(phase);
-    document.getElementById('illum').textContent      = Math.round(illum * 100) + '%';
     fitTime();
   }
 
