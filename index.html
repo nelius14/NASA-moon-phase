@@ -373,7 +373,7 @@ function tick() {
 // ── Boot ─────────────────────────────────────────────────────
 window.addEventListener('load', () => {
   tick();
-  setInterval(tick, 60000);
+  setInterval(() => { tick(); fitTime(); }, 60000);
 
   const img    = document.getElementById('moon-img');
   const status = document.getElementById('moon-status');
@@ -384,13 +384,14 @@ window.addEventListener('load', () => {
     img.src = bustCache ? url + '?t=' + Date.now() : url;
     document.getElementById('phase-name').textContent = phaseName(phase);
     document.getElementById('illum').textContent      = Math.round(illum * 100) + '%';
+    fitTime();
   }
 
   // Refresh clock, photo and phase text when iPad wakes from sleep
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       tick();
-      renderMoon(true);
+      renderMoon(true); // also re-fits the time width
     }
   });
 
@@ -409,7 +410,7 @@ window.addEventListener('load', () => {
   renderMoon(false);
 
   // Match time width to phase-name width using off-screen probe spans
-  document.fonts.ready.then(() => {
+  function fitTime() {
     const phaseEl = document.getElementById('phase-name');
     const timeEl  = document.getElementById('time-display');
 
@@ -448,7 +449,9 @@ window.addEventListener('load', () => {
     }
     document.body.removeChild(timeProbe);
     timeEl.style.fontSize = Math.floor(lo) + 'px';
-  });
+  }
+
+  document.fonts.ready.then(fitTime);
 });
 </script>
 </body>
