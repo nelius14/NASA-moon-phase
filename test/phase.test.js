@@ -9,8 +9,8 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1].split('// ── Clock')[0];
 const ctx = {};
 vm.createContext(ctx);
-vm.runInContext(script + ';this.api={elongation,toJD,moonData,phaseName,frameUrl,nextPhaseEvent}', ctx);
-const { elongation, toJD, moonData, phaseName, frameUrl, nextPhaseEvent } = ctx.api;
+vm.runInContext(script + ';this.api={elongation,toJD,moonData,phaseName,frameUrl,nextPhaseEvent,moonDistance,nextDistanceExtreme,lunation}', ctx);
+const { elongation, toJD, moonData, phaseName, frameUrl, nextPhaseEvent, moonDistance, nextDistanceExtreme, lunation } = ctx.api;
 
 // [label, UTC time, expected elongation in degrees]
 const events = [
@@ -64,3 +64,21 @@ const after = nextPhaseEvent(new Date(nf.getTime() + 3600000), 180);
 const gapDays = (after - nf) / 86400000;
 assert(gapDays > 28.5 && gapDays < 30.5, `gap ${gapDays}`);
 console.log('ok   next full/new moon', nf.toISOString(), nn.toISOString());
+
+// Distance. Reference values are NASA/JPL Horizons (DE441), geocentric, retrieved 2026-11-19.
+const jdOf = iso => toJD(Date.parse(iso));
+assert(Math.abs(moonDistance(jdOf('2026-11-19T18:00:00Z')) - 385490) < 150, 'distance now');
+const peri = nextDistanceExtreme(new Date('2026-12-01T00:00:00Z'), true);
+const apo  = nextDistanceExtreme(new Date('2026-11-01T00:00:00Z'), false);
+assert(hoursOff(peri.date, '2026-12-24T09:00:00Z') < 3, `perigee ${peri.date.toISOString()}`);
+assert(Math.abs(peri.km - 356648) < 150, `perigee km ${peri.km}`);
+assert(hoursOff(apo.date, '2026-11-13T18:00:00Z') < 3, `apogee ${apo.date.toISOString()}`);
+assert(Math.abs(apo.km - 405650) < 150, `apogee km ${apo.km}`);
+console.log('ok   distance, perigee', peri.date.toISOString(), Math.round(peri.km), 'km');
+
+// lunation brackets "now" and lasts 29.2 to 29.9 days
+const ln = lunation(new Date('2026-11-19T18:00:00Z'));
+assert(ln.start <= new Date('2026-11-19T18:00:00Z') && ln.end > new Date('2026-11-19T18:00:00Z'));
+const lenDays = (ln.end - ln.start) / 86400000;
+assert(lenDays > 29.2 && lenDays < 29.9, `lunation ${lenDays}`);
+console.log('ok   lunation', ln.start.toISOString(), '->', ln.end.toISOString());

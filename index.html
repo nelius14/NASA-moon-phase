@@ -16,17 +16,40 @@
     body {
       background: #000;
       color: rgba(228, 218, 188, 0.90);
-      height: 100vh;
-      height: 100dvh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
+      overflow-x: hidden;
       font-family: 'Cormorant Garamond', 'Georgia', serif;
       user-select: none;
       -webkit-user-select: none;
       /* safe area for notched devices */
       padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    /* ── Page one fills the screen; page two scrolls in below ── */
+    .screen {
+      position: relative;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .scroll-hint {
+      position: absolute;
+      left: 0; right: 0; bottom: 0.9rem;
+      text-align: center;
+      font-family: 'Inconsolata', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(180,172,155,0.72);
+    }
+
+    @media (orientation: landscape) {
+      /* centre the hint under the moon so it never meets the text column */
+      .scroll-hint { right: auto; width: 55%; }
+    }
+    @media (orientation: landscape) and (max-height: 700px) {
+      .info > * + * { margin-top: 1.1rem !important; }
     }
 
     /* ── Two-column layout ───────────────── */
@@ -168,6 +191,61 @@
     }
     @media (min-width: 1100px) { .phase-name { font-size: 4rem; } }
 
+    /* rotating panel: every card sits in the same grid cell, so the panel is as tall as its tallest card */
+    .panel { display: grid; }
+    .card {
+      grid-row: 1; grid-column: 1;
+      min-width: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 1.2s ease, visibility 0s linear 1.2s;
+    }
+    .card.active {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 1.2s ease, visibility 0s linear 0s;
+    }
+    .card-title {
+      font-family: 'Inconsolata', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.18em;
+      color: rgba(180,172,155,0.72);
+      text-transform: uppercase;
+      margin-bottom: 0.7rem;
+    }
+    .panel-dots { display: flex; margin-top: 0.9rem; }
+    .panel-dots .dot {
+      width: 6px; height: 6px;
+      margin-right: 8px;
+      border-radius: 50%;
+      background: rgba(180,172,155,0.35);
+    }
+    .panel-dots .dot.on { background: rgba(228,218,188,0.9); }
+    @media (orientation: portrait) {
+      .panel { justify-items: center; }
+      .panel-dots { justify-content: center; }
+      .panel-dots .dot { margin: 0 4px; }
+    }
+
+    /* moon age card */
+    .age-line { font-family: 'Inconsolata', monospace; font-size: 0.85rem; letter-spacing: 0.06em; color: rgba(210,202,180,0.88); }
+    .age-line b { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; margin-right: 0.4rem; color: rgba(228,218,188,1); }
+    .cycle { position: relative; height: 1px; margin: 1rem 0 1.5rem; background: rgba(228,218,188,0.35); }
+    .cycle-tick { position: absolute; top: -3px; width: 1px; height: 7px; background: rgba(228,218,188,0.6); }
+    .cycle-label {
+      position: absolute; top: 10px;
+      font-family: 'Inconsolata', monospace; font-size: 0.6rem; letter-spacing: 0.1em;
+      color: rgba(180,172,155,0.72); white-space: nowrap;
+      -webkit-transform: translateX(-50%); transform: translateX(-50%);
+    }
+    .cycle-dot {
+      position: absolute; top: -5px;
+      width: 11px; height: 11px; margin-left: -5px;
+      border-radius: 50%; background: rgba(228,218,188,1);
+    }
+    .kv-value { font-family: 'Inconsolata', monospace; font-size: 0.85rem; letter-spacing: 0.06em; color: rgba(210,202,180,0.88); }
+    .kv-note { font-family: 'Inconsolata', monospace; font-size: 0.68rem; letter-spacing: 0.1em; color: rgba(180,172,155,0.72); text-transform: uppercase; margin-top: 0.05rem; }
+
     /* upcoming events */
     .events {
       display: flex;
@@ -187,23 +265,52 @@
       border: 1px solid rgba(228,218,188,0.8);
     }
     .moon-dot.full { background: rgba(228,218,188,0.9); }
+    .moon-dot.near { background: radial-gradient(circle, rgba(228,218,188,0.9) 0, rgba(228,218,188,0.9) 30%, transparent 34%); }
+    .moon-dot.far  { border-style: dashed; }
+    .moon-dot.firstq { background: -webkit-linear-gradient(left, transparent 50%, rgba(228,218,188,0.9) 50%); background: linear-gradient(90deg, transparent 50%, rgba(228,218,188,0.9) 50%); }
+    .moon-dot.lastq  { background: -webkit-linear-gradient(left, rgba(228,218,188,0.9) 50%, transparent 50%); background: linear-gradient(90deg, rgba(228,218,188,0.9) 50%, transparent 50%); }
     .event-text { display: flex; flex-direction: column; }
     .event-text > * + * { margin-top: 0.05rem; }
     .event-name { font-family: 'Inconsolata', monospace; font-size: 0.85rem; letter-spacing: 0.06em; color: rgba(210,202,180,0.88); }
     .event-days { font-family: 'Inconsolata', monospace; font-size: 0.68rem; letter-spacing: 0.1em; color: rgba(180,172,155,0.72); text-transform: uppercase; }
 
+    /* page two */
+    .details {
+      padding: 4rem 3rem 3rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .details h2 {
+      font-weight: 300; font-style: italic;
+      font-size: 2.4rem; letter-spacing: 0.04em;
+      color: rgba(228,218,188,0.95);
+      margin-bottom: 2rem;
+    }
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-gap: 3rem;
+    }
+    .details-grid > div { min-width: 0; }
+    @media (orientation: portrait) { .details-grid { grid-template-columns: 1fr; } }
+    .details .events > * + * { margin-top: 1rem; }
+    .details .event-name { font-size: 1rem; }
+    .details .event-days { font-size: 0.75rem; }
+
     /* credit */
     .credit {
       font-family: 'Inconsolata', monospace;
-      font-size: 0.6rem;
+      font-size: 0.7rem;
       letter-spacing: 0.09em;
       color: rgba(180,172,155,0.7);
-      margin-top: 0.5rem;
+      margin-top: 3rem;
+      line-height: 1.8;
     }
   </style>
 </head>
 <body>
 
+<section class="screen">
 <div class="layout">
 
   <!-- Left: moon photograph -->
@@ -230,27 +337,79 @@
       <div class="phase-name" id="illum">—</div>
     </div>
 
-    <div class="events" id="events">
-      <div class="event">
-        <span class="moon-dot full"></span>
-        <div class="event-text">
-          <div class="event-name" id="next-full-when">—</div>
-          <div class="event-days" id="next-full-in">Next full moon</div>
-        </div>
-      </div>
-      <div class="event">
-        <span class="moon-dot new"></span>
-        <div class="event-text">
-          <div class="event-name" id="next-new-when">—</div>
-          <div class="event-days" id="next-new-in">Next new moon</div>
-        </div>
-      </div>
-    </div>
+    <div>
+      <div class="panel" id="panel">
 
-    <div class="credit">NASA SVS · Lunar Reconnaissance Orbiter · Public domain</div>
+        <div class="card active">
+          <div class="card-title">Coming up</div>
+          <div class="events">
+            <div class="event">
+              <span class="moon-dot full"></span>
+              <div class="event-text">
+                <div class="event-name" id="next-full-when">—</div>
+                <div class="event-days" id="next-full-in">Next full moon</div>
+              </div>
+            </div>
+            <div class="event">
+              <span class="moon-dot new"></span>
+              <div class="event-text">
+                <div class="event-name" id="next-new-when">—</div>
+                <div class="event-days" id="next-new-in">Next new moon</div>
+              </div>
+            </div>
+            <div class="event">
+              <span class="moon-dot near"></span>
+              <div class="event-text">
+                <div class="event-name" id="next-perigee-when">—</div>
+                <div class="event-days" id="next-perigee-in">Closest approach</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">The Moon today</div>
+          <div class="age-line"><b id="age-days">—</b><span id="age-of"></span></div>
+          <div class="cycle" id="cycle"></div>
+          <div class="kv-value" id="dist-km">—</div>
+          <div class="kv-note" id="dist-note"></div>
+        </div>
+
+      </div>
+      <div class="panel-dots" id="panel-dots"><span class="dot on"></span><span class="dot"></span></div>
+    </div>
 
   </div>
 </div>
+<div class="scroll-hint">Swipe up for details</div>
+</section>
+
+<section class="details" id="details">
+  <h2>The Moon in detail</h2>
+  <div class="details-grid">
+    <div>
+      <div class="card-title">Next phases</div>
+      <div class="events">
+        <div class="event"><span class="moon-dot firstq"></span><div class="event-text"><div class="event-name" id="d-firstq-when">—</div><div class="event-days" id="d-firstq-in">First quarter</div></div></div>
+        <div class="event"><span class="moon-dot full"></span><div class="event-text"><div class="event-name" id="d-full-when">—</div><div class="event-days" id="d-full-in">Full moon</div></div></div>
+        <div class="event"><span class="moon-dot lastq"></span><div class="event-text"><div class="event-name" id="d-lastq-when">—</div><div class="event-days" id="d-lastq-in">Last quarter</div></div></div>
+        <div class="event"><span class="moon-dot new"></span><div class="event-text"><div class="event-name" id="d-new-when">—</div><div class="event-days" id="d-new-in">New moon</div></div></div>
+      </div>
+    </div>
+    <div>
+      <div class="card-title">Distance and size</div>
+      <div class="events">
+        <div class="event"><span class="moon-dot near"></span><div class="event-text"><div class="event-name" id="d-perigee-when">—</div><div class="event-days" id="d-perigee-in">Closest approach</div></div></div>
+        <div class="event"><span class="moon-dot far"></span><div class="event-text"><div class="event-name" id="d-apogee-when">—</div><div class="event-days" id="d-apogee-in">Farthest point</div></div></div>
+        <div class="event"><span class="moon-dot"></span><div class="event-text"><div class="event-name" id="d-size">—</div><div class="event-days">Apparent width right now</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="credit">
+    Phases come from the Moon's and Sun's positions along the ecliptic (Meeus, Astronomical Algorithms).<br>
+    Photograph: NASA Scientific Visualization Studio, Moon Phase and Libration 2026 (Lunar Reconnaissance Orbiter). Public domain.
+  </div>
+</section>
 
 <script>
 // ── Lunar maths ──────────────────────────────────────────────
@@ -341,6 +500,69 @@ function nextPhaseEvent(from, target) {
   return null;
 }
 
+// Earth-Moon distance in km (Meeus ch. 47, truncated series; within about 60 km).
+// [D, M, M', F, coefficient in 1e-3 km]
+const MOON_DIST_TERMS = [
+  [0,0,1,0,-20905355],[2,0,-1,0,-3699111],[2,0,0,0,-2955968],[0,0,2,0,-569925],
+  [0,1,0,0,48888],[0,0,0,2,-3149],[2,0,-2,0,246158],[2,-1,-1,0,-152138],
+  [2,0,1,0,-170733],[2,-1,0,0,-204586],[0,1,-1,0,-129620],[1,0,0,0,108743],
+  [0,1,1,0,104755],[2,0,0,-2,10321],[0,0,1,-2,79661],[4,0,-1,0,-34782],
+  [0,0,3,0,-23210],[4,0,-2,0,-21636],[2,1,-1,0,24208],[2,1,0,0,30824],
+  [1,0,-1,0,-8379],[1,1,0,0,-16675],[2,-1,1,0,-12831],[2,0,2,0,-10445],
+  [4,0,0,0,-11650],[2,0,-3,0,14403],[0,1,-2,0,-7003],[2,-1,-2,0,10056],
+  [1,0,1,0,6322],[2,-2,0,0,-9884]
+];
+
+function moonDistance(jd) {
+  const T  = (jd - 2451545.0) / 36525;
+  const D  = norm360(297.8501921 + 445267.1114034 * T);
+  const M  = norm360(357.5291092 + 35999.0502909 * T);
+  const Mp = norm360(134.9633964 + 477198.8675055 * T);
+  const F  = norm360(93.2720950 + 483202.0175233 * T);
+  const E  = 1 - 0.002516 * T - 0.0000074 * T * T;
+  let sum = 0;
+  for (const [d, m, mp, f, c] of MOON_DIST_TERMS) {
+    const e = m === 0 ? 1 : (Math.abs(m) === 1 ? E : E * E);
+    sum += c * e * Math.cos((d * D + m * M + mp * Mp + f * F) * RAD);
+  }
+  return 385000.56 + sum / 1000;
+}
+
+// Next perigee (closest) or apogee (farthest) after `from`: { date, km }.
+function nextDistanceExtreme(from, closest) {
+  const sign = closest ? 1 : -1;
+  const f = jd => sign * moonDistance(jd);
+  const STEP = 0.25; // days
+  const t0 = toJD(from);
+  let a = f(t0), b = f(t0 + STEP);
+  for (let t = t0 + 2 * STEP; t < t0 + 32; t += STEP) {
+    const c = f(t);
+    if (b < a && b <= c) { // f has a minimum inside [t - 2 STEP, t]
+      let lo = t - 2 * STEP, hi = t;
+      for (let i = 0; i < 40; i++) {
+        const m1 = lo + (hi - lo) / 3, m2 = hi - (hi - lo) / 3;
+        if (f(m1) < f(m2)) hi = m2; else lo = m1;
+      }
+      const mid = (lo + hi) / 2;
+      return { date: new Date((mid - 2440587.5) * 86400000), km: moonDistance(mid) };
+    }
+    a = b; b = c;
+  }
+  return null;
+}
+
+// The new moons either side of `now`, so we can say how far into the cycle we are.
+function lunation(now) {
+  const HOUR = 3600000;
+  let start = nextPhaseEvent(new Date(now - 31 * 86400000), 0);
+  let end = nextPhaseEvent(new Date(start.getTime() + HOUR), 0);
+  while (end <= now) {
+    start = end;
+    end = nextPhaseEvent(new Date(start.getTime() + HOUR), 0);
+  }
+  return { start, end };
+}
+
 // ── NASA SVS frame lookup ────────────────────────────────────
 // SVS-5587: 8760 frames, one per UTC hour of 2026. Frame 1 = Jan 1, 2026 00:00 UTC.
 // Public domain. During 2026 we show the exact hour, with the real libration and
@@ -406,6 +628,70 @@ window.addEventListener('load', () => {
     document.getElementById('next-' + kind + '-in').textContent = label + ' · in ' + away;
   }
 
+  const fmtWhen = d => d.toLocaleString('en-GB', WHEN).replace(',', '').toUpperCase();
+  const fmtAway = (d, now) => {
+    const h = (d - now) / 3600000;
+    return h < 24 ? Math.max(1, Math.round(h)) + ' h' : Math.round(h / 24) + ' days';
+  };
+  const fmtKm = km => (Math.round(km / 100) * 100).toLocaleString('en-GB') + ' km';
+  const setText = (id, t) => { document.getElementById(id).textContent = t; };
+
+  function renderDistance(now) {
+    const nowJd = toJD(now);
+    const km = moonDistance(nowJd);
+    const light = km / 299792.458;
+    const pct = Math.abs(km - 384400) / 384400 * 100;
+    setText('dist-km', fmtKm(km) + ' away');
+    setText('dist-note', 'Light takes ' + light.toFixed(2) + ' s · ' + pct.toFixed(1) + '% ' +
+      (km < 384400 ? 'nearer' : 'farther') + ' than average');
+    const width = 2 * Math.asin(1737.4 / km) * 180 / Math.PI * 60; // arcminutes
+    setText('d-size', width.toFixed(1) + '\u2032 (' + (width / 60).toFixed(2) + '\u00b0)');
+    const peri = nextDistanceExtreme(now, true), apo = nextDistanceExtreme(now, false);
+    if (peri) {
+      setText('next-perigee-when', fmtWhen(peri.date));
+      setText('next-perigee-in', 'Closest approach · ' + fmtKm(peri.km) + ' · in ' + fmtAway(peri.date, now));
+      setText('d-perigee-when', fmtWhen(peri.date));
+      setText('d-perigee-in', 'Closest approach · ' + fmtKm(peri.km) + ' · in ' + fmtAway(peri.date, now));
+    }
+    if (apo) {
+      setText('d-apogee-when', fmtWhen(apo.date));
+      setText('d-apogee-in', 'Farthest point · ' + fmtKm(apo.km) + ' · in ' + fmtAway(apo.date, now));
+    }
+  }
+
+  function renderCycle(now) {
+    const { start, end } = lunation(now);
+    const len = (end - start) / 86400000;
+    const age = (now - start) / 86400000;
+    document.getElementById('age-days').textContent = age.toFixed(1);
+    document.getElementById('age-of').textContent = 'days into a ' + len.toFixed(1) + '-day cycle';
+    const bar = document.getElementById('cycle');
+    const frac = d => ((d - start) / (end - start) * 100);
+    const marks = [[0, 'NEW'], [frac(nextPhaseEvent(start, 90)), '1ST QTR'],
+                   [frac(nextPhaseEvent(start, 180)), 'FULL'], [frac(nextPhaseEvent(start, 270)), '3RD QTR'], [100, 'NEW']];
+    let html = '';
+    for (const [pos, label] of marks) {
+      html += '<span class="cycle-tick" style="left:' + pos.toFixed(1) + '%"></span>' +
+              '<span class="cycle-label" style="left:' + pos.toFixed(1) + '%">' + label + '</span>';
+    }
+    html += '<span class="cycle-dot" style="left:' + (age / len * 100).toFixed(1) + '%"></span>';
+    bar.innerHTML = html;
+    // quarter and full/new rows on page two
+    const rows = [['firstq', 90], ['full', 180], ['lastq', 270], ['new', 0]];
+    const dated = [];
+    for (const [id, deg] of rows) {
+      const d = nextPhaseEvent(now, deg);
+      if (!d) continue;
+      setText('d-' + id + '-when', fmtWhen(d));
+      const label = { firstq: 'First quarter', full: 'Full moon', lastq: 'Last quarter', new: 'New moon' }[id];
+      setText('d-' + id + '-in', label + ' · in ' + fmtAway(d, now));
+      dated.push([d, document.getElementById('d-' + id + '-when').parentNode.parentNode]);
+    }
+    // soonest first, whatever the order of the phases happens to be
+    dated.sort((x, y) => x[0] - y[0]);
+    dated.forEach(pair => pair[1].parentNode.appendChild(pair[1]));
+  }
+
   let shownUrl = '';
   function renderMoon(bustCache) {
     const now = new Date();
@@ -418,6 +704,8 @@ window.addEventListener('load', () => {
     }
     renderEvent('full', 180, 'Next full moon', now);
     renderEvent('new', 0, 'Next new moon', now);
+    renderDistance(now);
+    renderCycle(now);
     document.getElementById('phase-name').textContent = phaseName(phase);
     document.getElementById('illum').textContent      = Math.round(illum * 100) + '%';
     fitTime();
@@ -444,6 +732,36 @@ window.addEventListener('load', () => {
   };
 
   renderMoon(false);
+
+  // Rotating panel: one card at a time, crossfaded by CSS
+  const cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
+  const dots  = Array.prototype.slice.call(document.querySelectorAll('#panel-dots .dot'));
+  let cardIdx = 0;
+  function showCard(i) {
+    cardIdx = (i + cards.length) % cards.length;
+    cards.forEach((c, n) => c.classList.toggle('active', n === cardIdx));
+    dots.forEach((d, n) => d.classList.toggle('on', n === cardIdx));
+  }
+  setInterval(() => showCard(cardIdx + 1), 20000);
+
+  // After two quiet minutes on the details page, glide back to the top
+  let idleTimer = null, glide = null;
+  function glideToTop() {
+    const from = window.pageYOffset;
+    const t0 = Date.now();
+    glide = setInterval(() => {
+      const p = Math.min(1, (Date.now() - t0) / 700);
+      window.scrollTo(0, from * (1 - p * p * (3 - 2 * p)));
+      if (p === 1) { clearInterval(glide); glide = null; }
+    }, 16);
+  }
+  function touched() {
+    if (glide) { clearInterval(glide); glide = null; }
+    clearTimeout(idleTimer);
+    if (window.pageYOffset > 20) idleTimer = setTimeout(glideToTop, 120000);
+  }
+  window.addEventListener('scroll', touched);
+  window.addEventListener('touchstart', touched);
 
   // Match time width to phase-name width using off-screen probe spans
   function fitTime() {
