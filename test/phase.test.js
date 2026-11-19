@@ -9,8 +9,8 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1].split('// ── Clock')[0];
 const ctx = {};
 vm.createContext(ctx);
-vm.runInContext(script + ';this.api={elongation,toJD,moonData,phaseName,frameUrl}', ctx);
-const { elongation, toJD, moonData, phaseName, frameUrl } = ctx.api;
+vm.runInContext(script + ';this.api={elongation,toJD,moonData,phaseName,frameUrl,nextPhaseEvent}', ctx);
+const { elongation, toJD, moonData, phaseName, frameUrl, nextPhaseEvent } = ctx.api;
 
 // [label, UTC time, expected elongation in degrees]
 const events = [
@@ -52,3 +52,15 @@ for (const iso of ['2027-03-14T12:00:00Z', '2025-07-01T03:00:00Z']) {
   assert(diff < 0.5, `${iso}: frame ${n} off by ${diff.toFixed(2)} deg`);
 }
 console.log('ok   fallback frame matching');
+
+// next full / new moon
+const hoursOff = (a, iso) => Math.abs(a - new Date(iso)) / 3600000;
+const nf = nextPhaseEvent(new Date('2026-11-19T18:00:00Z'), 180);
+const nn = nextPhaseEvent(new Date('2026-11-01T00:00:00Z'), 0);
+assert(hoursOff(nf, '2026-11-24T14:53:00Z') < 1, `next full: ${nf.toISOString()}`);
+assert(hoursOff(nn, '2026-11-09T07:02:00Z') < 1, `next new: ${nn.toISOString()}`);
+// asking again just after an event must return the following one, about a month on
+const after = nextPhaseEvent(new Date(nf.getTime() + 3600000), 180);
+const gapDays = (after - nf) / 86400000;
+assert(gapDays > 28.5 && gapDays < 30.5, `gap ${gapDays}`);
+console.log('ok   next full/new moon', nf.toISOString(), nn.toISOString());
