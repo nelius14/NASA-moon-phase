@@ -2,7 +2,8 @@
   "name": "nasa-moon-phase",
   "private": true,
   "scripts": {
-    "test": "node test/phase.test.js",
-    "compat": "node scripts/compat.js"
+    "test": "node test/phase.test.js && node scripts/stamp.js --check",
+    "compat": "node scripts/compat.js",
+    "stamp": "node scripts/stamp.js"
   }
 }

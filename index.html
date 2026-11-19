@@ -7,6 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Moon">
   <title>Moon Phase</title>
+  <meta name="build" content="83be92d303">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inconsolata:wght@300;400&display=swap" rel="stylesheet">
@@ -73,8 +74,8 @@
       }
       .layout > * + * { margin-left: 0; margin-top: 2rem; }
       .moon-ring {
-        width: min(78vw, 480px) !important;
-        height: min(78vw, 480px) !important;
+        width: min(62vw, 440px) !important;
+        height: min(62vw, 440px) !important;
       }
       .info { align-items: center; text-align: center; }
       .info > * + * { margin-top: 1.2rem !important; }
@@ -191,61 +192,6 @@
     }
     @media (min-width: 1100px) { .phase-name { font-size: 4rem; } }
 
-    /* rotating panel: every card sits in the same grid cell, so the panel is as tall as its tallest card */
-    .panel { display: grid; }
-    .card {
-      grid-row: 1; grid-column: 1;
-      min-width: 0;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 1.2s ease, visibility 0s linear 1.2s;
-    }
-    .card.active {
-      opacity: 1;
-      visibility: visible;
-      transition: opacity 1.2s ease, visibility 0s linear 0s;
-    }
-    .card-title {
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.75rem;
-      letter-spacing: 0.18em;
-      color: rgba(180,172,155,0.72);
-      text-transform: uppercase;
-      margin-bottom: 0.7rem;
-    }
-    .panel-dots { display: flex; margin-top: 0.9rem; }
-    .panel-dots .dot {
-      width: 6px; height: 6px;
-      margin-right: 8px;
-      border-radius: 50%;
-      background: rgba(180,172,155,0.35);
-    }
-    .panel-dots .dot.on { background: rgba(228,218,188,0.9); }
-    @media (orientation: portrait) {
-      .panel { justify-items: center; }
-      .panel-dots { justify-content: center; }
-      .panel-dots .dot { margin: 0 4px; }
-    }
-
-    /* moon age card */
-    .age-line { font-family: 'Inconsolata', monospace; font-size: 0.85rem; letter-spacing: 0.06em; color: rgba(210,202,180,0.88); }
-    .age-line b { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; font-weight: 300; margin-right: 0.4rem; color: rgba(228,218,188,1); }
-    .cycle { position: relative; height: 1px; margin: 1rem 0 1.5rem; background: rgba(228,218,188,0.35); }
-    .cycle-tick { position: absolute; top: -3px; width: 1px; height: 7px; background: rgba(228,218,188,0.6); }
-    .cycle-label {
-      position: absolute; top: 10px;
-      font-family: 'Inconsolata', monospace; font-size: 0.6rem; letter-spacing: 0.1em;
-      color: rgba(180,172,155,0.72); white-space: nowrap;
-      -webkit-transform: translateX(-50%); transform: translateX(-50%);
-    }
-    .cycle-dot {
-      position: absolute; top: -5px;
-      width: 11px; height: 11px; margin-left: -5px;
-      border-radius: 50%; background: rgba(228,218,188,1);
-    }
-    .kv-value { font-family: 'Inconsolata', monospace; font-size: 0.85rem; letter-spacing: 0.06em; color: rgba(210,202,180,0.88); }
-    .kv-note { font-family: 'Inconsolata', monospace; font-size: 0.68rem; letter-spacing: 0.1em; color: rgba(180,172,155,0.72); text-transform: uppercase; margin-top: 0.05rem; }
-
     /* upcoming events */
     .events {
       display: flex;
@@ -306,7 +252,64 @@
       margin-top: 3rem;
       line-height: 1.8;
     }
-  </style>
+  
+    @media (orientation: landscape) {
+      .date { font-size: 1.7rem; }
+      .info > * + * { margin-top: 1.1rem !important; }
+    }
+    @media (orientation: landscape) and (max-height: 700px) {
+      .info > * + * { margin-top: 0.7rem !important; }
+    }
+
+    /* ── Charts and page sections ───────────────── */
+    svg .t  { font-family: 'Inconsolata', monospace; font-size: 9.5px; letter-spacing: .1em; fill: rgba(205,197,175,.92); }
+    svg .t2 { font-family: 'Inconsolata', monospace; font-size: 11px; letter-spacing: .08em; fill: #e4dabc; }
+    svg .pl { font-family: 'Inconsolata', monospace; font-size: 12.5px; letter-spacing: .12em; }
+    svg .rb { font-family: 'Inconsolata', monospace; font-size: 11px; letter-spacing: .1em; fill: rgba(222,214,190,.95); }
+    .chart svg, .wide svg { display: block; width: 100%; height: auto; }
+    .age-line { font-family: 'Inconsolata', monospace; font-size: 0.85rem; letter-spacing: 0.06em; color: rgba(210,202,180,0.9); }
+    .age-line b { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; margin-right: 0.4rem; color: #e4dabc; }
+    .chart { margin-top: 0.4rem; }
+    .card-title {
+      font-family: 'Inconsolata', monospace; font-size: 0.75rem; letter-spacing: 0.18em;
+      color: rgba(180,172,155,0.85); text-transform: uppercase; margin-bottom: 0.7rem;
+    }
+
+    .sec { position: relative; max-width: 1024px; margin: 0 auto; padding: 2.2rem 24px 1.2rem; }
+    .sec-title { font-style: italic; font-weight: 300; font-size: 2.2rem; letter-spacing: .04em; color: rgba(228,218,188,.95); }
+    .sec-sub { font-family: 'Inconsolata', monospace; font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: rgba(190,182,160,.92); margin: .3rem 0 1rem; }
+    .cap { font-family: 'Inconsolata', monospace; font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: rgba(205,197,175,.92); margin: .5rem 0 .6rem; }
+    .h3 { font-style: italic; font-weight: 300; font-size: 1.5rem; color: rgba(228,218,188,.95); margin-top: 1.4rem; }
+
+    /* the nine-planet row */
+    .row9 { display: grid; grid-template-columns: repeat(9, 1fr); }
+    @media (orientation: portrait) { .row9 { grid-template-columns: repeat(3, 1fr); grid-row-gap: 22px; } }
+    .c { display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0; }
+    .ic { position: relative; width: 100%; height: 64px; display: flex; align-items: center; justify-content: center; }
+    .ic img { display: block; }
+    .moon { position: absolute; border-radius: 50%; background: #cfcabd; }
+    .pn { font-size: 1.3rem; font-weight: 400; color: #eee4c6; line-height: 1.1; margin-top: 4px; }
+    .au { font-family: 'Inconsolata', monospace; font-size: .82rem; color: rgba(230,222,198,.95); letter-spacing: .04em; margin: 2px 0 6px; }
+    .pill { font-family: 'Inconsolata', monospace; font-size: .66rem; letter-spacing: .06em; border-radius: 11px; padding: 3px 8px; white-space: nowrap; margin-bottom: 6px; }
+    .pill.dawn { background: #f0b35a; color: #1a1206; }
+    .pill.dusk { background: #93a4ff; color: #0b0f2a; }
+    .pill.night { background: #ece6d0; color: #161616; }
+    .pill.glare { background: #3b3b3b; color: #d8d2bf; }
+    .pill.tele { background: #6b5a86; color: #f0e9ff; }
+    .pill.here { border: 1px solid rgba(191,224,255,.7); color: #bfe0ff; }
+    .lt { font-family: 'Inconsolata', monospace; font-size: .68rem; letter-spacing: .06em; color: rgba(205,197,175,.92); margin-top: 2px; }
+
+    /* page three: true sizes */
+    .sizes { display: flex; align-items: flex-end; justify-content: space-between; height: 160px; margin-top: 10px; }
+    .sz { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+    .szi { height: 132px; display: flex; align-items: flex-end; padding-bottom: 6px; }
+    .szn { font-family: 'Inconsolata', monospace; font-size: .62rem; letter-spacing: .1em; }
+    .szv { font-family: 'Inconsolata', monospace; font-size: .58rem; letter-spacing: .06em; color: rgba(205,197,175,.92); }
+    .three { display: grid; grid-template-columns: repeat(3, 1fr); grid-gap: 20px; margin-top: 1.6rem; }
+    @media (orientation: portrait) { .three { grid-template-columns: 1fr; } }
+    .three > div { font-family: 'Inconsolata', monospace; font-size: .76rem; letter-spacing: .04em; line-height: 1.5; color: rgba(222,214,190,.95); }
+    .three b { display: block; font-family: 'Cormorant Garamond', serif; font-weight: 400; font-size: 1.25rem; color: #eee4c6; margin-bottom: 2px; }
+</style>
 </head>
 <body>
 
@@ -333,58 +336,68 @@
     </div>
 
     <div>
-      <div class="panel" id="panel">
+      <div class="age-line"><b id="age-days">—</b><span id="age-of"></span></div>
+      <div class="chart" id="cycle-chart"></div>
+    </div>
 
-        <div class="card active">
-          <div class="card-title">Coming up</div>
-          <div class="events">
-            <div class="event">
-              <span class="moon-dot full"></span>
-              <div class="event-text">
-                <div class="event-name" id="next-full-when">—</div>
-                <div class="event-days" id="next-full-in">Next full moon</div>
-              </div>
-            </div>
-            <div class="event">
-              <span class="moon-dot new"></span>
-              <div class="event-text">
-                <div class="event-name" id="next-new-when">—</div>
-                <div class="event-days" id="next-new-in">Next new moon</div>
-              </div>
-            </div>
-            <div class="event">
-              <span class="moon-dot near"></span>
-              <div class="event-text">
-                <div class="event-name" id="next-perigee-when">—</div>
-                <div class="event-days" id="next-perigee-in">Closest approach</div>
-              </div>
-            </div>
-          </div>
+    <div>
+      <div class="phase-label">Distance to the Moon</div>
+      <div class="chart" id="dist-chart"></div>
+    </div>
+
+    <div class="events">
+      <div class="event">
+        <span class="moon-dot full"></span>
+        <div class="event-text">
+          <div class="event-name" id="next-full-when">—</div>
+          <div class="event-days" id="next-full-in">Next full moon</div>
         </div>
-
-        <div class="card">
-          <div class="card-title">The Moon today</div>
-          <div class="age-line"><b id="age-days">—</b><span id="age-of"></span></div>
-          <div class="cycle" id="cycle"></div>
-          <div class="kv-value" id="dist-km">—</div>
-          <div class="kv-note" id="dist-note"></div>
-        </div>
-
       </div>
-      <div class="panel-dots" id="panel-dots"><span class="dot on"></span><span class="dot"></span></div>
+      <div class="event">
+        <span class="moon-dot new"></span>
+        <div class="event-text">
+          <div class="event-name" id="next-new-when">—</div>
+          <div class="event-days" id="next-new-in">Next new moon</div>
+        </div>
+      </div>
     </div>
 
   </div>
 </div>
-<div class="scroll-hint">Swipe up for details</div>
+<div class="scroll-hint">Swipe up for the solar system</div>
 </section>
 
-<section class="details" id="details">
-  <h2>The Moon in detail</h2>
-  <div class="details-grid">
+<section class="sec" id="solar">
+  <div class="sec-title">The solar system today</div>
+  <div class="sec-sub">Seen from 30° above the ecliptic · <span id="solar-date"></span> · everything calculated live</div>
+  <div class="wide" id="orrery"></div>
+  <div class="wide" id="ribbon"></div>
+  <div class="cap">Where to look: each planet's angle from the Sun, as seen from Earth tonight · Pluto is a dwarf planet</div>
+  <div class="row9" id="planet-row"></div>
+</section>
+
+<section class="sec" id="scale">
+  <div class="sec-title">How big is it, really?</div>
+  <div class="sec-sub">Everything in this section is true to scale</div>
+  <div class="h3">Distance</div>
+  <div class="cap">Sun to Pluto's far side, in a straight line. Light needs about 7 hours to cross it.</div>
+  <div class="wide" id="scale-rulers"></div>
+  <div class="h3">Size</div>
+  <div class="cap">Earth is 12 pixels wide here. The Sun would be 1,312 pixels, wider than this screen.</div>
+  <div class="sizes" id="sizes"></div>
+  <div class="three">
+    <div><b>On the solar system page: distance</b>Squeezed with a log scale so the inner planets are visible. The rings say how far.</div>
+    <div><b>On the solar system page: size</b>Icons grow with radius to the power ¼. Jupiter shows 1.8× Earth, in truth 11×.</div>
+    <div><b>On the solar system page: tilt</b>Orbit tilts are drawn ×3. Pluto's 17° is drawn as it really is.</div>
+  </div>
+</section>
+
+<section class="sec details" id="details">
+  <div class="sec-title">The Moon in detail</div>
+  <div class="details-grid" style="margin-top:1.4rem">
     <div>
       <div class="card-title">Next phases</div>
-      <div class="events">
+      <div class="events" id="phase-rows">
         <div class="event"><span class="moon-dot firstq"></span><div class="event-text"><div class="event-name" id="d-firstq-when">—</div><div class="event-days" id="d-firstq-in">First quarter</div></div></div>
         <div class="event"><span class="moon-dot full"></span><div class="event-text"><div class="event-name" id="d-full-when">—</div><div class="event-days" id="d-full-in">Full moon</div></div></div>
         <div class="event"><span class="moon-dot lastq"></span><div class="event-text"><div class="event-name" id="d-lastq-when">—</div><div class="event-days" id="d-lastq-in">Last quarter</div></div></div>
@@ -401,8 +414,9 @@
     </div>
   </div>
   <div class="credit">
-    Phases come from the Moon's and Sun's positions along the ecliptic (Meeus, Astronomical Algorithms).<br>
-    Photograph: NASA Scientific Visualization Studio, Moon Phase and Libration 2026 (Lunar Reconnaissance Orbiter). Public domain.
+    Positions: the Moon and Sun from Meeus, Astronomical Algorithms; the planets from NASA/JPL's approximate orbital elements (accurate to about a tenth of a degree).<br>
+    Moon photograph: NASA Scientific Visualization Studio, Moon Phase and Libration 2026 (Lunar Reconnaissance Orbiter). Public domain.<br>
+    Planet photographs: NASA missions (MESSENGER, Mariner 10, Apollo 17, Hubble, Cassini, Voyager 2, New Horizons), via Wikimedia Commons.
   </div>
 </section>
 
@@ -592,159 +606,521 @@ function frameUrl(date) {
   return BASE + 'moon.' + String(frameNumber(date)).padStart(4, '0') + '.jpg';
 }
 
+// All local extremes of the Earth-Moon distance between two Julian dates.
+function distanceExtremes(fromJd, toJd) {
+  const STEP = 0.25; // days
+  const out = [];
+  let a = moonDistance(fromJd), b = moonDistance(fromJd + STEP);
+  for (let t = fromJd + 2 * STEP; t <= toJd; t += STEP) {
+    const c = moonDistance(t);
+    const isMin = b < a && b <= c, isMax = b > a && b >= c;
+    if (isMin || isMax) {
+      const sign = isMin ? 1 : -1;
+      let lo = t - 2 * STEP, hi = t;
+      for (let i = 0; i < 40; i++) {
+        const m1 = lo + (hi - lo) / 3, m2 = hi - (hi - lo) / 3;
+        if (sign * moonDistance(m1) < sign * moonDistance(m2)) hi = m2; else lo = m1;
+      }
+      const mid = (lo + hi) / 2;
+      out.push({ jd: mid, date: new Date((mid - 2440587.5) * 86400000), km: moonDistance(mid), closest: isMin });
+    }
+    a = b; b = c;
+  }
+  return out;
+}
+
+// ── Planets ──────────────────────────────────────────────────
+// JPL "Approximate Positions of the Planets", table 1 (valid 1800-2050), J2000 mean ecliptic.
+// [a, da, e, de, I, dI, L, dL, varpi, dvarpi, Omega, dOmega], rates per Julian century.
+const PLANETS = ['Mercury','Venus','Earth','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
+const EL = {
+  Mercury:[0.38709927,0.00000037,0.20563593,0.00001906,7.00497902,-0.00594749,252.25032350,149472.67411175,77.45779628,0.16047689,48.33076593,-0.12534081],
+  Venus:[0.72333566,0.00000390,0.00677672,-0.00004107,3.39467605,-0.00078890,181.97909950,58517.81538729,131.60246718,0.00268329,76.67984255,-0.27769418],
+  Earth:[1.00000261,0.00000562,0.01671123,-0.00004392,-0.00001531,-0.01294668,100.46457166,35999.37244981,102.93768193,0.32327364,0.0,0.0],
+  Mars:[1.52371034,0.00001847,0.09339410,0.00007882,1.84969142,-0.00813131,-4.55343205,19140.30268499,-23.94362959,0.44441088,49.55953891,-0.29257343],
+  Jupiter:[5.20288700,-0.00011607,0.04838624,-0.00013253,1.30439695,-0.00183714,34.39644051,3034.74612775,14.72847983,0.21252668,100.47390909,0.20469106],
+  Saturn:[9.53667594,-0.00125060,0.05386179,-0.00050991,2.48599187,0.00193609,49.95424423,1222.49362201,92.59887831,-0.41897216,113.66242448,-0.28867794],
+  Uranus:[19.18916464,-0.00196176,0.04725744,-0.00004397,0.77263783,-0.00242939,313.23810451,428.48202785,170.95427630,0.40805281,74.01692503,0.04240589],
+  Neptune:[30.06992276,0.00026291,0.00859048,0.00005105,1.77004347,0.00035372,-55.12002969,218.45945325,44.96476227,-0.32241464,131.78422574,-0.00508664],
+  Pluto:[39.48211675,-0.00031596,0.24882730,0.00005170,17.14001206,0.00004818,238.92903833,145.20780515,224.06891629,-0.04062942,110.30393684,-0.01183482]
+};
+
+function planetElements(n, jd) {
+  const T = (jd - 2451545) / 36525, p = EL[n];
+  return { a: p[0] + p[1] * T, e: p[2] + p[3] * T, I: p[4] + p[5] * T,
+           L: p[6] + p[7] * T, w: p[8] + p[9] * T, O: p[10] + p[11] * T };
+}
+
+// Position in the orbital plane, rotated into heliocentric ecliptic coordinates (AU).
+function orbitalToEcliptic(el, xp, yp) {
+  const om = (el.w - el.O) * RAD, O = el.O * RAD, I = el.I * RAD;
+  const co = Math.cos(om), so = Math.sin(om), cO = Math.cos(O), sO = Math.sin(O), cI = Math.cos(I), sI = Math.sin(I);
+  return [
+    (co * cO - so * sO * cI) * xp + (-so * cO - co * sO * cI) * yp,
+    (co * sO + so * cO * cI) * xp + (-so * sO + co * cO * cI) * yp,
+    (so * sI) * xp + (co * sI) * yp
+  ];
+}
+
+function planetPosition(n, jd) {
+  const el = planetElements(n, jd);
+  const M = (((el.L - el.w) % 360) + 540) % 360 - 180;
+  let E = M * RAD + el.e * Math.sin(M * RAD);
+  for (let i = 0; i < 30; i++) {
+    const d = (E - el.e * Math.sin(E) - M * RAD) / (1 - el.e * Math.cos(E));
+    E -= d;
+    if (Math.abs(d) < 1e-12) break;
+  }
+  return orbitalToEcliptic(el, el.a * (Math.cos(E) - el.e), el.a * Math.sqrt(1 - el.e * el.e) * Math.sin(E));
+}
+
+// Points around the whole orbit, for drawing.
+function planetOrbit(n, jd, count) {
+  const el = planetElements(n, jd), om = (el.w - el.O) * RAD, O = el.O * RAD, I = el.I * RAD, out = [];
+  for (let i = 0; i <= count; i++) {
+    const nu = i / count * 2 * Math.PI;
+    const r = el.a * (1 - el.e * el.e) / (1 + el.e * Math.cos(nu));
+    const u = om + nu;
+    out.push([
+      r * (Math.cos(O) * Math.cos(u) - Math.sin(O) * Math.sin(u) * Math.cos(I)),
+      r * (Math.sin(O) * Math.cos(u) + Math.cos(O) * Math.sin(u) * Math.cos(I)),
+      r * Math.sin(u) * Math.sin(I)
+    ]);
+  }
+  return out;
+}
+
+// Where a planet sits in our sky: degrees from the Sun (positive = east of the Sun, so
+// in the evening sky; negative = west, so in the morning sky), distance from Earth in AU.
+function planetSky(n, jd) {
+  const E = planetPosition('Earth', jd), P = planetPosition(n, jd);
+  const g = [P[0] - E[0], P[1] - E[1], P[2] - E[2]], s = [-E[0], -E[1], -E[2]];
+  const delta = Math.hypot(g[0], g[1], g[2]), sun = Math.hypot(s[0], s[1], s[2]);
+  const cos = (g[0] * s[0] + g[1] * s[1] + g[2] * s[2]) / (delta * sun);
+  const angle = Math.acos(Math.max(-1, Math.min(1, cos))) / RAD;
+  let d = (Math.atan2(g[1], g[0]) - Math.atan2(s[1], s[0])) / RAD;
+  d = ((d % 360) + 540) % 360 - 180;
+  return { r: Math.hypot(P[0], P[1], P[2]), delta, e: d >= 0 ? angle : -angle };
+}
+
+// One word for tonight, for the colour-coded pills.
+function skyKind(n, e) {
+  if (n === 'Earth') return { kind: 'here', txt: 'YOU ARE HERE' };
+  if (n === 'Pluto') return { kind: 'tele', txt: 'TELESCOPE ONLY' };
+  const a = Math.abs(e);
+  if (a < 25) return { kind: 'glare', txt: 'IN THE GLARE' };
+  if (a > 150) return { kind: 'night', txt: 'ALL NIGHT' };
+  return e < 0 ? { kind: 'dawn', txt: 'BEFORE DAWN' } : { kind: 'dusk', txt: 'AFTER SUNSET' };
+}
+
+// ── UI ───────────────────────────────────────────────────────
+const COLORS = { Mercury:'#b9b3a8', Venus:'#f0dca8', Earth:'#bfe0ff', Mars:'#e0795f', Jupiter:'#e2c096',
+                 Saturn:'#e6d196', Uranus:'#a6dadd', Neptune:'#8aa5ec', Pluto:'#d8b7a0' };
+const RADIUS_KM = { Mercury:2440, Venus:6052, Earth:6371, Mars:3390, Jupiter:69911, Saturn:58232,
+                    Uranus:25362, Neptune:24622, Pluto:1188 };
+const AU_MIN = 8.3167;                        // minutes for sunlight to cross 1 AU
+const ICON_BASE = 25;                         // Earth's icon width in the planet row, px
+const iconSize = n => ICON_BASE * Math.pow(RADIUS_KM[n] / 6371, 0.25); // compressed, still ordered by size
+const SATURN_RING = 2.27;                     // ring width / planet width
+const SATURN_ASPECT = 101 / 256;              // height / width of img/planet-saturn.png
+const ORBIT_TILT_BOOST = 3;                   // vertical exaggeration of orbit tilts (Pluto is left true)
+const VIEW_ELEVATION = 30 * RAD;              // camera height above the ecliptic
+
+const pad2 = n => (n < 10 ? '0' : '') + n;
+const planetFile = n => 'img/planet-' + n.toLowerCase() + '.png';
+const lightTime = min => { const t = Math.round(min); return t < 60 ? t + ' MIN' : Math.floor(t / 60) + ' H ' + (t % 60) + ' MIN'; };
+const fmtKm = km => (Math.round(km / 100) * 100).toLocaleString('en-GB') + ' km';
+const WHEN = { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' };
+const fmtWhen = d => d.toLocaleString('en-GB', WHEN).replace(',', '').toUpperCase();
+const fmtDay = d => d.toLocaleDateString('en-GB', { day:'numeric', month:'short' }).toUpperCase();
+const fmtAway = (d, now) => {
+  const h = (d - now) / 3600000;
+  return h < 24 ? Math.max(1, Math.round(h)) + ' h' : Math.round(h / 24) + ' days';
+};
+const setText = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+const svgImage = (n, cx, cy, w) => {
+  const h = n === 'Saturn' ? w * SATURN_ASPECT : w;
+  return '<image xlink:href="' + planetFile(n) + '" x="' + (cx - w / 2).toFixed(1) + '" y="' + (cy - h / 2).toFixed(1) +
+         '" width="' + w.toFixed(1) + '" height="' + h.toFixed(1) + '"/>';
+};
+const planetWidth = (n, d) => n === 'Saturn' ? SATURN_RING * d : d;
+
+// ── Page one: the cycle line ──
+function cycleSvg(now) {
+  const ln = lunation(now);
+  const len = (ln.end - ln.start) / 86400000, age = (now - ln.start) / 86400000;
+  const x0 = 56, w = 288, at = d => x0 + (d - ln.start) / (ln.end - ln.start) * w;
+  const marks = [[ln.start, 'NEW'], [nextPhaseEvent(ln.start, 90), '1ST QTR'], [nextPhaseEvent(ln.start, 180), 'FULL'],
+                 [nextPhaseEvent(ln.start, 270), '3RD QTR'], [ln.end, 'NEW']];
+  let s = '<svg viewBox="0 0 400 52"><defs><linearGradient id="fadeC" gradientUnits="userSpaceOnUse" x1="0" x2="400" y1="0" y2="0">' +
+    '<stop offset="0" stop-color="#e4dabc" stop-opacity="0"/><stop offset="0.16" stop-color="#e4dabc" stop-opacity="0.9"/>' +
+    '<stop offset="0.84" stop-color="#e4dabc" stop-opacity="0.9"/><stop offset="1" stop-color="#e4dabc" stop-opacity="0"/></linearGradient></defs>' +
+    '<line x1="0" x2="400" y1="14" y2="14" stroke="url(#fadeC)" stroke-width="1.2"/>';
+  for (const [d, label] of marks) {
+    const x = at(d).toFixed(1);
+    s += '<line x1="' + x + '" x2="' + x + '" y1="10" y2="18" stroke="rgba(228,218,188,.65)"/>' +
+         '<text x="' + x + '" y="36" text-anchor="middle" class="t">' + label + '</text>';
+  }
+  s += '<circle cx="' + at(now).toFixed(1) + '" cy="14" r="5.5" fill="#e4dabc"/></svg>';
+  return { svg: s, age, len };
+}
+
+// ── Page one: distance to the Moon, four weeks either side of now ──
+function distanceSvg(now) {
+  const jd0 = toJD(now), W = 400, H = 118, T = 26, B = 24, y0 = 352000, y1 = 410000;
+  const X = d => (d + 21) / 42 * W, Y = km => T + (y1 - km) / (y1 - y0) * (H - T - B);
+  let path = '';
+  for (let d = -21; d <= 21.001; d += 0.25) path += (path ? ' L' : 'M') + X(d).toFixed(1) + ',' + Y(moonDistance(jd0 + d)).toFixed(1);
+  const nowKm = moonDistance(jd0), avgY = Y(384400).toFixed(1);
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '"><defs><linearGradient id="fadeD" gradientUnits="userSpaceOnUse" x1="0" x2="400" y1="0" y2="0">' +
+    '<stop offset="0" stop-color="#e4dabc" stop-opacity="0"/><stop offset="0.16" stop-color="#e4dabc" stop-opacity="0.9"/>' +
+    '<stop offset="0.84" stop-color="#e4dabc" stop-opacity="0.9"/><stop offset="1" stop-color="#e4dabc" stop-opacity="0"/></linearGradient></defs>' +
+    '<line x1="0" x2="' + W + '" y1="' + avgY + '" y2="' + avgY + '" stroke="url(#fadeD)" stroke-opacity="0.4" stroke-dasharray="2 4"/>' +
+    '<text x="62" y="' + (+avgY + 13) + '" class="t">AVERAGE 384,400</text>' +
+    '<path d="' + path + '" fill="none" stroke="url(#fadeD)" stroke-width="1.7"/>';
+  for (const ex of distanceExtremes(jd0 - 14.5, jd0 + 14.5)) {
+    const x = X(ex.jd - jd0), y = Y(ex.km);
+    const anchor = x < 90 ? 'start' : (x > W - 90 ? 'end' : 'middle');
+    const tx = anchor === 'start' ? Math.max(x - 6, 2) : (anchor === 'end' ? Math.min(x + 6, W - 2) : x);
+    const text = (ex.closest ? 'CLOSEST ' : 'FARTHEST ') + (Math.round(ex.km / 100) * 100).toLocaleString('en-GB') + ' · ' + fmtDay(ex.date);
+    s += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="3.2" fill="' + (ex.closest ? 'rgba(228,218,188,.95)' : '#000') + '" stroke="rgba(228,218,188,.95)"/>' +
+         '<text x="' + tx.toFixed(1) + '" y="' + (ex.closest ? y + 16 : y - 8).toFixed(1) + '" text-anchor="' + anchor + '" class="t">' + text + '</text>';
+  }
+  const nx = X(0);
+  s += '<line x1="' + nx + '" x2="' + nx + '" y1="' + (T - 4) + '" y2="' + (H - B + 4) + '" stroke="rgba(228,218,188,.35)"/>' +
+       '<circle cx="' + nx + '" cy="' + Y(nowKm).toFixed(1) + '" r="5" fill="#000" stroke="#fff" stroke-width="1.6"/>' +
+       '<text x="' + (nx + 12) + '" y="' + (Y(nowKm) - 16).toFixed(1) + '" class="t2">TODAY ' + (Math.round(nowKm / 100) * 100).toLocaleString('en-GB') + ' km</text></svg>';
+  return s;
+}
+
+// Put each planet's name beside it without covering another name, icon or the Sun.
+function placeLabels(list, sunX, sunY, W) {
+  const boxes = [{ x0: sunX - 16, x1: sunX + 16, y0: sunY - 16, y1: sunY + 16 }];
+  for (const it of list) boxes.push({ x0: it.x - it.r, x1: it.x + it.r, y0: it.y - it.r, y1: it.y + it.r });
+  const hit = (a, b) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
+  let out = '';
+  for (const it of list.slice().sort((a, b) => Math.hypot(a.x - sunX, a.y - sunY) - Math.hypot(b.x - sunX, b.y - sunY))) {
+    const tw = it.n.length * 9.2, r = it.r;
+    const cands = [
+      ['start', it.x + r + 5, it.y + 4], ['end', it.x - r - 5, it.y + 4],
+      ['start', it.x + r * 0.6, it.y - r - 4], ['end', it.x - r * 0.6, it.y - r - 4],
+      ['start', it.x + r * 0.6, it.y + r + 14], ['end', it.x - r * 0.6, it.y + r + 14],
+      ['start', it.x + r + 5, it.y - r - 4], ['end', it.x - r - 5, it.y + r + 14]
+    ];
+    let pick = cands[0];
+    for (const c of cands) {
+      const x0 = c[0] === 'start' ? c[1] : c[1] - tw;
+      const box = { x0, x1: x0 + tw, y0: c[2] - 12, y1: c[2] + 3 };
+      const own = { x0: it.x - r, x1: it.x + r, y0: it.y - r, y1: it.y + r };
+      const clash = boxes.some(b => b !== own && !(b.x0 === own.x0 && b.y0 === own.y0) && hit(box, b));
+      if (!clash && box.x0 > 4 && box.x1 < W - 4) { pick = c; break; }
+    }
+    const x0 = pick[0] === 'start' ? pick[1] : pick[1] - tw;
+    boxes.push({ x0, x1: x0 + tw, y0: pick[2] - 12, y1: pick[2] + 3 });
+    out += '<text x="' + pick[1].toFixed(1) + '" y="' + pick[2].toFixed(1) + '" text-anchor="' + pick[0] + '" class="pl" fill="' + COLORS[it.n] + '">' + it.n.toUpperCase() + '</text>';
+  }
+  return out;
+}
+
+// ── Page two: the tilted orrery ──
+// Distances are squeezed with log(1 + r/0.4 AU) so that Mercury and Pluto both fit; angles stay true.
+function orrerySvg(jd) {
+  const W = 1000, H = 312, cx = W / 2, cy = 150, R = 285, r0 = 0.4, rMax = 50;
+  const L = r => R * Math.log(1 + r / r0) / Math.log(1 + rMax / r0);
+  const sinE = Math.sin(VIEW_ELEVATION), cosE = Math.cos(VIEW_ELEVATION);
+  const proj = (v, boost) => {
+    const r = Math.hypot(v[0], v[1], v[2]), k = r > 0 ? L(r) / r : 0;
+    const x = v[0] * k, y = v[1] * k, z = v[2] * k * boost;
+    return { sx: cx + x, sy: cy - (y * sinE + z * cosE), fx: cx + x, fy: cy - y * sinE, depth: y };
+  };
+  const boost = n => n === 'Pluto' ? 1 : ORBIT_TILT_BOOST;
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '"><defs>' +
+    '<radialGradient id="sunG"><stop offset="0" stop-color="#fff3c8"/><stop offset="0.35" stop-color="#ffd98a" stop-opacity="0.9"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>' +
+    '<radialGradient id="diskG"><stop offset="0" stop-color="#e4dabc" stop-opacity="0.07"/><stop offset="1" stop-color="#e4dabc" stop-opacity="0.015"/></radialGradient></defs>';
+  s += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + R + '" ry="' + (R * sinE).toFixed(1) + '" fill="url(#diskG)"/>';
+  for (const au of [1, 5, 10, 30, 50]) {
+    const rr = L(au), lab = au + ' AU · ' + lightTime(au * AU_MIN);
+    s += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rr.toFixed(1) + '" ry="' + (rr * sinE).toFixed(1) + '" fill="none" stroke="rgba(228,218,188,0.16)" stroke-dasharray="2 5"/>' +
+         '<text x="' + cx + '" y="' + (cy + rr * sinE + 12).toFixed(1) + '" text-anchor="middle" class="t">' + lab + '</text>';
+  }
+  const back = [], front = [];
+  const path = pts => 'M' + pts.map(p => p.sx.toFixed(1) + ',' + p.sy.toFixed(1)).join(' L');
+  for (const n of PLANETS) {
+    const pts = planetOrbit(n, jd, 360).map(v => proj(v, boost(n)));
+    let run = [], inFront = null;
+    for (const p of pts) {
+      const f = p.depth < 0;
+      if (inFront !== null && f !== inFront) { (inFront ? front : back).push(run); run = []; }
+      run.push(p); inFront = f;
+    }
+    (inFront ? front : back).push(run);
+  }
+  for (const r of back) if (r.length > 1) s += '<path d="' + path(r) + '" fill="none" stroke="rgba(228,218,188,0.20)"/>';
+  s += '<circle cx="' + cx + '" cy="' + cy + '" r="22" fill="url(#sunG)"/><circle cx="' + cx + '" cy="' + cy + '" r="6" fill="#fff6d6"/>';
+  for (const r of front) if (r.length > 1) s += '<path d="' + path(r) + '" fill="none" stroke="rgba(228,218,188,0.42)" stroke-width="1.1"/>';
+  const items = PLANETS.map(n => ({ n, p: proj(planetPosition(n, jd), boost(n)) })).sort((a, b) => b.p.depth - a.p.depth);
+  const labelItems = [];
+  for (const { n, p } of items) {
+    const d = iconSize(n) * 0.62, w = planetWidth(n, d);
+    s += '<line x1="' + p.sx.toFixed(1) + '" y1="' + p.sy.toFixed(1) + '" x2="' + p.fx.toFixed(1) + '" y2="' + p.fy.toFixed(1) + '" stroke="' + COLORS[n] + '" stroke-opacity="0.6"/>' +
+         '<circle cx="' + p.fx.toFixed(1) + '" cy="' + p.fy.toFixed(1) + '" r="1.6" fill="' + COLORS[n] + '" fill-opacity="0.8"/>' + svgImage(n, p.sx, p.sy, w);
+    if (n === 'Earth') s += '<circle cx="' + (p.sx + d * 0.9).toFixed(1) + '" cy="' + (p.sy - d * 0.5).toFixed(1) + '" r="2.4" fill="#cfcabd"/>';
+    labelItems.push({ n, x: p.sx, y: p.sy, r: Math.max(w, d) / 2 });
+  }
+  s += placeLabels(labelItems, cx, cy, W);
+  s += '<text x="' + (W - 14) + '" y="14" text-anchor="end" class="t">LOG SCALE · RINGS SHOW DISTANCE AND SUNLIGHT TRAVEL TIME</text>' +
+       '<text x="' + (W - 14) + '" y="27" text-anchor="end" class="t">TILTS ×' + ORBIT_TILT_BOOST + ' (PLUTO\'S IS TRUE) · DROP LINES = HEIGHT ABOVE OR BELOW THE ECLIPTIC</text></svg>';
+  return s;
+}
+
+// ── Page two: where each world sits relative to the Sun, as seen from Earth ──
+function ribbonSvg(jd, now) {
+  const W = 976, H = 186, ax = 128, X = e => W / 2 + e / 180 * 430;
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '"><defs><radialGradient id="sunG2"><stop offset="0" stop-color="#fff3c8"/><stop offset="0.4" stop-color="#ffd98a" stop-opacity="0.9"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>' +
+    '</defs>';
+  s += '<rect x="' + X(-25) + '" y="' + (ax - 34) + '" width="' + (X(25) - X(-25)) + '" height="68" rx="6" fill="rgba(255,190,90,.10)"/>' +
+       '<text x="' + X(0) + '" y="' + (ax + 50) + '" text-anchor="middle" class="t">GLARE ZONE</text>';
+  for (const [n, h, o] of [['Venus', 12, 0.28], ['Mercury', 6, 0.5]]) {
+    const m = n === 'Venus' ? 47 : 28;
+    s += '<rect x="' + X(-m) + '" y="' + (ax - h / 2) + '" width="' + (X(m) - X(-m)) + '" height="' + h + '" rx="' + h / 2 + '" fill="' + COLORS[n] + '" fill-opacity="' + o + '"/>';
+  }
+  s += '<text x="' + (X(-47) - 8) + '" y="' + (ax + 36) + '" text-anchor="end" class="t" fill="' + COLORS.Venus + '">VENUS NEVER STRAYS MORE THAN 47°</text>' +
+       '<text x="' + (X(-28) - 8) + '" y="' + (ax + 50) + '" text-anchor="end" class="t" fill="' + COLORS.Mercury + '">MERCURY NEVER MORE THAN 28°</text>' +
+       '<line x1="' + X(-180) + '" x2="' + X(180) + '" y1="' + ax + '" y2="' + ax + '" stroke="rgba(228,218,188,.4)"/>';
+  for (const e of [-180, -90, 0, 90, 180]) {
+    s += '<line x1="' + X(e) + '" x2="' + X(e) + '" y1="' + (ax - 4) + '" y2="' + (ax + 4) + '" stroke="rgba(228,218,188,.55)"/>';
+    if (e !== 0) s += '<text x="' + X(e) + '" y="' + (ax + 17) + '" text-anchor="middle" class="t">' + Math.abs(e) + '°</text>';
+  }
+  s += '<text x="' + (X(-180) - 10) + '" y="14" class="rb">◀ MORNING SKY · rises before the Sun</text>' +
+       '<text x="' + (X(180) + 10) + '" y="14" text-anchor="end" class="rb">EVENING SKY · sets after the Sun ▶</text>';
+  // everything on the ribbon, moon included
+  const el = elongation(jd);
+  const items = [{ n: 'Moon', e: el <= 180 ? el : el - 360, d: 26 }];
+  for (const n of PLANETS) if (n !== 'Earth') items.push({ n, e: planetSky(n, jd).e, d: iconSize(n) * 0.8 });
+  items.sort((a, b) => a.e - b.e);
+  const placed = { u1: [], u2: [], u3: [], d1: [] };
+  const slotY = (slot, d) => slot === 'd1' ? ax + 22 + d / 2 : ax - 14 - d / 2 - (+slot[1] - 1) * 40;
+  for (const it of items) {
+    it.x = X(it.e);
+    it.w = it.n === 'Saturn' ? SATURN_RING * it.d : it.d;
+    it.text = it.n.toUpperCase() + ' ' + Math.abs(Math.round(it.e)) + '°';
+    const left = it.x - it.w / 2, right = it.x + it.w / 2 + 6 + it.text.length * 7.4;
+    // first free slot: up, then (on the right-hand side only) below, then higher up
+    const order = it.x > W / 2 + 160 ? ['u1', 'd1', 'u2', 'u3'] : ['u1', 'u2', 'u3'];
+    let slot = order[order.length - 1];
+    for (const sl of order) {
+      if (placed[sl].every(b => right + 6 < b[0] || left - 6 > b[1])) { slot = sl; break; }
+    }
+    placed[slot].push([left, right]);
+    it.slot = slot;
+  }
+  for (const it of items) {
+    const yc = slotY(it.slot, it.d), c = it.n === 'Moon' ? '#cfcabd' : COLORS[it.n];
+    const edge = it.slot === 'd1' ? yc - it.d / 2 : yc + it.d / 2;
+    s += '<line x1="' + it.x + '" x2="' + it.x + '" y1="' + edge + '" y2="' + ax + '" stroke="rgba(228,218,188,.35)"/>' +
+         '<circle cx="' + it.x + '" cy="' + ax + '" r="2.6" fill="' + c + '"/>';
+    if (it.n === 'Moon') {
+      s += '<clipPath id="mc"><circle cx="' + it.x + '" cy="' + yc + '" r="' + it.d / 2 + '"/></clipPath>' +
+           '<image xlink:href="' + frameUrl(now) + '" x="' + (it.x - it.d / 2) + '" y="' + (yc - it.d / 2) + '" width="' + it.d + '" height="' + it.d + '" clip-path="url(#mc)"/>';
+    } else {
+      s += svgImage(it.n, it.x, yc, it.w);
+    }
+    s += '<text x="' + (it.x + it.w / 2 + 5) + '" y="' + (yc + 4) + '" class="rb" fill="' + c + '">' + it.text + '</text>';
+  }
+  s += '<circle cx="' + X(0) + '" cy="' + ax + '" r="16" fill="url(#sunG2)"/><circle cx="' + X(0) + '" cy="' + ax + '" r="6" fill="#fff6d6"/></svg>';
+  return s;
+}
+
+// ── Page two: one row, Mercury to Pluto ──
+function planetRowHtml(jd) {
+  let h = '';
+  for (const n of PLANETS) {
+    const sky = n === 'Earth' ? null : planetSky(n, jd);
+    const r = Math.hypot.apply(null, planetPosition(n, jd));
+    const pill = skyKind(n, sky ? sky.e : 0);
+    const d = iconSize(n), w = planetWidth(n, d);
+    let moons = '';
+    if (n === 'Earth') moons = '<span class="moon" style="width:7px;height:7px;left:calc(50% + ' + (d / 2 + 5) + 'px);top:12px"></span>';
+    if (n === 'Jupiter') {
+      const sizes = [3.2, 2.8, 4.2, 3.8];
+      for (let i = 0; i < 4; i++) moons += '<span class="moon" style="width:' + sizes[i] + 'px;height:' + sizes[i] + 'px;left:calc(50% + ' + (d / 2 + 4 + i * 6) + 'px);top:' + (31 + (i % 2) * 3) + 'px"></span>';
+    }
+    if (n === 'Saturn') moons = '<span class="moon" style="width:4.5px;height:4.5px;left:calc(50% + ' + (w / 2 + 2) + 'px);top:30px"></span>';
+    const light = n === 'Earth' ? 'MOON ' + (moonDistance(jd) / 299792.458).toFixed(1) + ' S AWAY' : 'LIGHT ' + lightTime(sky.delta * AU_MIN);
+    const h2 = n === 'Saturn' ? w * SATURN_ASPECT : w;
+    h += '<div class="c"><div class="ic"><img src="' + planetFile(n) + '" alt="" style="width:' + w.toFixed(1) + 'px;height:' + h2.toFixed(1) + 'px">' + moons + '</div>' +
+         '<div class="pn">' + n + '</div><div class="au">' + r.toFixed(2) + ' AU</div>' +
+         '<span class="pill ' + pill.kind + '">' + pill.txt + '</span><div class="lt">' + light + '</div></div>';
+  }
+  return h;
+}
+
+// ── Page three: true scale ──
+function scaleSvg(jd) {
+  const W = 920, x50 = a => a / 50 * W, x2 = a => a / 2 * W, Y2 = 196;
+  const anc = (a, max) => a === max ? 'end' : 'middle';
+  const au = n => Math.hypot.apply(null, planetPosition(n, jd));
+  let s = '<svg viewBox="-30 0 ' + (W + 60) + ' 270">';
+  s += '<line x1="0" x2="' + W + '" y1="56" y2="56" stroke="rgba(228,218,188,.5)"/>';
+  for (const a of [0, 10, 20, 30, 40, 50]) {
+    s += '<line x1="' + x50(a) + '" x2="' + x50(a) + '" y1="50" y2="62" stroke="rgba(228,218,188,.7)"/>' +
+         '<text x="' + x50(a) + '" y="82" text-anchor="' + anc(a, 50) + '" class="rb">' + a + ' AU</text>' +
+         '<text x="' + x50(a) + '" y="98" text-anchor="' + anc(a, 50) + '" class="t">' + (a === 0 ? 'THE SUN' : 'LIGHT ' + lightTime(a * AU_MIN)) + '</text>';
+  }
+  for (const n of ['Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto']) {
+    const x = x50(au(n));
+    s += '<circle cx="' + x + '" cy="56" r="5" fill="' + COLORS[n] + '"/><text x="' + x + '" y="38" text-anchor="middle" class="pl" fill="' + COLORS[n] + '">' + n.toUpperCase() + '</text>';
+  }
+  s += '<rect x="0" y="48" width="' + x50(2) + '" height="16" fill="rgba(255,190,90,.18)" stroke="rgba(255,190,90,.8)"/>' +
+       '<text x="0" y="12" class="pl" fill="#ffd98a">MERCURY TO MARS ALL FIT IN THIS SLIVER (SHADED)</text>' +
+       '<line x1="0" y1="64" x2="0" y2="' + (Y2 - 8) + '" stroke="rgba(255,190,90,.45)" stroke-dasharray="3 4"/>' +
+       '<line x1="' + x50(2) + '" y1="64" x2="' + W + '" y2="' + (Y2 - 8) + '" stroke="rgba(255,190,90,.45)" stroke-dasharray="3 4"/>' +
+       '<line x1="0" x2="' + W + '" y1="' + Y2 + '" y2="' + Y2 + '" stroke="rgba(228,218,188,.5)"/>';
+  for (const a of [0, 0.5, 1, 1.5, 2]) {
+    s += '<line x1="' + x2(a) + '" x2="' + x2(a) + '" y1="' + (Y2 - 6) + '" y2="' + (Y2 + 6) + '" stroke="rgba(228,218,188,.7)"/>' +
+         '<text x="' + x2(a) + '" y="' + (Y2 + 26) + '" text-anchor="' + anc(a, 2) + '" class="rb">' + a + ' AU</text>' +
+         '<text x="' + x2(a) + '" y="' + (Y2 + 42) + '" text-anchor="' + anc(a, 2) + '" class="t">' + (a === 0 ? 'THE SUN' : 'LIGHT ' + lightTime(a * AU_MIN)) + '</text>';
+  }
+  for (const n of ['Mercury', 'Venus', 'Earth', 'Mars']) {
+    const x = x2(au(n));
+    s += '<circle cx="' + x + '" cy="' + Y2 + '" r="5" fill="' + COLORS[n] + '"/><text x="' + x + '" y="' + (Y2 - 14) + '" text-anchor="middle" class="pl" fill="' + COLORS[n] + '">' + n.toUpperCase() + '</text>';
+  }
+  s += '<text x="' + W / 2 + '" y="' + (Y2 + 66) + '" text-anchor="middle" class="t">ZOOMED ×25</text></svg>';
+  return s;
+}
+
+function sizesHtml() {
+  const E = 12; // Earth is 12 px wide on this row
+  let h = '';
+  for (const n of PLANETS) {
+    const d = E * RADIUS_KM[n] / 6371, w = Math.max(planetWidth(n, d), 1.5), hh = n === 'Saturn' ? w * SATURN_ASPECT : Math.max(d, 1.5);
+    h += '<div class="sz"><div class="szi"><img src="' + planetFile(n) + '" alt="" style="width:' + w.toFixed(1) + 'px;height:' + hh.toFixed(1) + 'px"></div>' +
+         '<div class="szn" style="color:' + COLORS[n] + '">' + n.toUpperCase() + '</div><div class="szv">' + (RADIUS_KM[n] / 6371).toFixed(2) + '× EARTH</div></div>';
+  }
+  return h;
+}
+
 // ── Clock ────────────────────────────────────────────────────
 function tick() {
   const n = new Date();
-  const dateEl = document.getElementById('date-display');
-  dateEl.innerHTML =
-    n.toLocaleDateString('en-GB', { weekday:'long' }).toUpperCase() +
-    '<br>' +
+  document.getElementById('date-display').innerHTML =
+    n.toLocaleDateString('en-GB', { weekday:'long' }).toUpperCase() + '<br>' +
     n.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }).toUpperCase();
-  document.getElementById('time-display').textContent =
-    n.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+  document.getElementById('time-display').textContent = n.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
 }
 
 // ── Boot ─────────────────────────────────────────────────────
 window.addEventListener('load', () => {
-  tick();
-  setInterval(() => { tick(); renderMoon(false); }, 60000); // always-on display: keep photo, text and events current
-
-  const img    = document.getElementById('moon-img');
+  const img = document.getElementById('moon-img');
   const status = document.getElementById('moon-status');
-
-  const WHEN = { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' };
-  function renderEvent(kind, target, label, now) {
-    const when = nextPhaseEvent(now, target);
-    if (!when) return;
-    const hours = (when - now) / 3600000;
-    const away = hours < 24 ? Math.max(1, Math.round(hours)) + ' h' : Math.round(hours / 24) + ' days';
-    document.getElementById('next-' + kind + '-when').textContent =
-      when.toLocaleString('en-GB', WHEN).replace(',', '').toUpperCase();
-    document.getElementById('next-' + kind + '-in').textContent = label + ' · in ' + away;
-  }
-
-  const fmtWhen = d => d.toLocaleString('en-GB', WHEN).replace(',', '').toUpperCase();
-  const fmtAway = (d, now) => {
-    const h = (d - now) / 3600000;
-    return h < 24 ? Math.max(1, Math.round(h)) + ' h' : Math.round(h / 24) + ' days';
-  };
-  const fmtKm = km => (Math.round(km / 100) * 100).toLocaleString('en-GB') + ' km';
-  const setText = (id, t) => { document.getElementById(id).textContent = t; };
-
-  function renderDistance(now) {
-    const nowJd = toJD(now);
-    const km = moonDistance(nowJd);
-    const light = km / 299792.458;
-    const pct = Math.abs(km - 384400) / 384400 * 100;
-    setText('dist-km', fmtKm(km) + ' away');
-    setText('dist-note', 'Light takes ' + light.toFixed(2) + ' s · ' + pct.toFixed(1) + '% ' +
-      (km < 384400 ? 'nearer' : 'farther') + ' than average');
-    const width = 2 * Math.asin(1737.4 / km) * 180 / Math.PI * 60; // arcminutes
-    setText('d-size', width.toFixed(1) + '\u2032 (' + (width / 60).toFixed(2) + '\u00b0)');
-    const peri = nextDistanceExtreme(now, true), apo = nextDistanceExtreme(now, false);
-    if (peri) {
-      setText('next-perigee-when', fmtWhen(peri.date));
-      setText('next-perigee-in', 'Closest approach · ' + fmtKm(peri.km) + ' · in ' + fmtAway(peri.date, now));
-      setText('d-perigee-when', fmtWhen(peri.date));
-      setText('d-perigee-in', 'Closest approach · ' + fmtKm(peri.km) + ' · in ' + fmtAway(peri.date, now));
-    }
-    if (apo) {
-      setText('d-apogee-when', fmtWhen(apo.date));
-      setText('d-apogee-in', 'Farthest point · ' + fmtKm(apo.km) + ' · in ' + fmtAway(apo.date, now));
-    }
-  }
-
-  function renderCycle(now) {
-    const { start, end } = lunation(now);
-    const len = (end - start) / 86400000;
-    const age = (now - start) / 86400000;
-    document.getElementById('age-days').textContent = age.toFixed(1);
-    document.getElementById('age-of').textContent = 'days into a ' + len.toFixed(1) + '-day cycle';
-    const bar = document.getElementById('cycle');
-    const frac = d => ((d - start) / (end - start) * 100);
-    const marks = [[0, 'NEW'], [frac(nextPhaseEvent(start, 90)), '1ST QTR'],
-                   [frac(nextPhaseEvent(start, 180)), 'FULL'], [frac(nextPhaseEvent(start, 270)), '3RD QTR'], [100, 'NEW']];
-    let html = '';
-    for (const [pos, label] of marks) {
-      html += '<span class="cycle-tick" style="left:' + pos.toFixed(1) + '%"></span>' +
-              '<span class="cycle-label" style="left:' + pos.toFixed(1) + '%">' + label + '</span>';
-    }
-    html += '<span class="cycle-dot" style="left:' + (age / len * 100).toFixed(1) + '%"></span>';
-    bar.innerHTML = html;
-    // quarter and full/new rows on page two
-    const rows = [['firstq', 90], ['full', 180], ['lastq', 270], ['new', 0]];
-    const dated = [];
-    for (const [id, deg] of rows) {
-      const d = nextPhaseEvent(now, deg);
-      if (!d) continue;
-      setText('d-' + id + '-when', fmtWhen(d));
-      const label = { firstq: 'First quarter', full: 'Full moon', lastq: 'Last quarter', new: 'New moon' }[id];
-      setText('d-' + id + '-in', label + ' · in ' + fmtAway(d, now));
-      dated.push([d, document.getElementById('d-' + id + '-when').parentNode.parentNode]);
-    }
-    // soonest first, whatever the order of the phases happens to be
-    dated.sort((x, y) => x[0] - y[0]);
-    dated.forEach(pair => pair[1].parentNode.appendChild(pair[1]));
-  }
-
   let shownUrl = '';
-  function renderMoon(bustCache) {
-    const now = new Date();
+
+  function fitTime() {
+    const phaseEl = document.getElementById('phase-name'), timeEl = document.getElementById('time-display');
+    const cs = getComputedStyle(phaseEl);
+    const probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font-family:' + cs.fontFamily +
+      ';font-size:' + cs.fontSize + ';font-weight:' + cs.fontWeight + ';font-style:' + cs.fontStyle + ';letter-spacing:' + cs.letterSpacing + ';';
+    probe.textContent = phaseEl.textContent;
+    document.body.appendChild(probe);
+    const target = probe.offsetWidth;
+    document.body.removeChild(probe);
+    const ct = getComputedStyle(timeEl);
+    const tp = document.createElement('span');
+    tp.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font-family:' + ct.fontFamily +
+      ';font-weight:' + ct.fontWeight + ';letter-spacing:' + ct.letterSpacing + ';';
+    tp.textContent = timeEl.textContent;
+    document.body.appendChild(tp);
+    let lo = 10, hi = 600;
+    while (hi - lo > 0.5) {
+      const mid = (lo + hi) / 2;
+      tp.style.fontSize = mid + 'px';
+      if (tp.offsetWidth < target) lo = mid; else hi = mid;
+    }
+    document.body.removeChild(tp);
+    timeEl.style.fontSize = Math.floor(lo) + 'px';
+  }
+
+  function renderEvent(prefix, deg, label, now) {
+    const when = nextPhaseEvent(now, deg);
+    if (!when) return;
+    setText(prefix + '-when', fmtWhen(when));
+    setText(prefix + '-in', label + ' · in ' + fmtAway(when, now));
+  }
+
+  function renderMoon(now, bustCache) {
     const { phase } = moonData(now);
     const url = frameUrl(now);
-    // Only touch the image when the frame changed (or on wake), so the photo never flickers.
     if (url !== shownUrl || bustCache) {
       shownUrl = url;
       img.src = bustCache ? url + '?t=' + Date.now() : url;
     }
-    renderEvent('full', 180, 'Next full moon', now);
-    renderEvent('new', 0, 'Next new moon', now);
-    renderDistance(now);
-    renderCycle(now);
-    document.getElementById('phase-name').textContent = phaseName(phase);
+    setText('phase-name', phaseName(phase));
+    const c = cycleSvg(now);
+    setText('age-days', c.age.toFixed(1));
+    setText('age-of', 'days into a ' + c.len.toFixed(1) + '-day cycle');
+    document.getElementById('cycle-chart').innerHTML = c.svg;
+    document.getElementById('dist-chart').innerHTML = distanceSvg(now);
+    renderEvent('next-full', 180, 'Next full moon', now);
+    renderEvent('next-new', 0, 'Next new moon', now);
     fitTime();
   }
 
-  // Refresh clock, photo and phase text when iPad wakes from sleep
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      tick();
-      renderMoon(true); // also re-fits the time width
+  function renderDetails(now) {
+    const jd = toJD(now);
+    for (const [id, deg, label] of [['firstq', 90, 'First quarter'], ['full', 180, 'Full moon'], ['lastq', 270, 'Last quarter'], ['new', 0, 'New moon']]) {
+      const d = nextPhaseEvent(now, deg);
+      if (!d) continue;
+      setText('d-' + id + '-when', fmtWhen(d));
+      setText('d-' + id + '-in', label + ' · in ' + fmtAway(d, now));
     }
-  });
-
-  img.onload = () => {
-    status.classList.add('hidden');
-  };
-
-  img.onerror = () => {
-    status.innerHTML =
-      'NASA image unavailable.<br><br>' +
-      'Serve via local server:<br>' +
-      'python3 -m http.server 8080<br>' +
-      'then open localhost:8080/index.html';
-  };
-
-  renderMoon(false);
-
-  // Rotating panel: one card at a time, crossfaded by CSS
-  const cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
-  const dots  = Array.prototype.slice.call(document.querySelectorAll('#panel-dots .dot'));
-  let cardIdx = 0;
-  function showCard(i) {
-    cardIdx = (i + cards.length) % cards.length;
-    cards.forEach((c, n) => c.classList.toggle('active', n === cardIdx));
-    dots.forEach((d, n) => d.classList.toggle('on', n === cardIdx));
+    for (const id of ['firstq', 'full', 'lastq', 'new']) {
+      const el = document.getElementById('d-' + id + '-when');
+      el.parentNode.parentNode.setAttribute('data-t', String(nextPhaseEvent(now, { firstq: 90, full: 180, lastq: 270, new: 0 }[id]).getTime()));
+    }
+    Array.prototype.slice.call(document.querySelectorAll('#phase-rows > .event'))
+      .sort((a, b) => a.getAttribute('data-t') - b.getAttribute('data-t'))
+      .forEach(el => el.parentNode.appendChild(el));
+    const km = moonDistance(jd), width = 2 * Math.asin(1737.4 / km) * 180 / Math.PI * 60;
+    setText('d-size', width.toFixed(1) + '′ (' + (width / 60).toFixed(2) + '°)');
+    const peri = nextDistanceExtreme(now, true), apo = nextDistanceExtreme(now, false);
+    if (peri) { setText('d-perigee-when', fmtWhen(peri.date)); setText('d-perigee-in', 'Closest approach · ' + fmtKm(peri.km) + ' · in ' + fmtAway(peri.date, now)); }
+    if (apo) { setText('d-apogee-when', fmtWhen(apo.date)); setText('d-apogee-in', 'Farthest point · ' + fmtKm(apo.km) + ' · in ' + fmtAway(apo.date, now)); }
   }
-  setInterval(() => showCard(cardIdx + 1), 20000);
 
-  // After two quiet minutes on the details page, glide back to the top
+  function renderSolar(now) {
+    const jd = toJD(now);
+    document.getElementById('orrery').innerHTML = orrerySvg(jd);
+    document.getElementById('ribbon').innerHTML = ribbonSvg(jd, now);
+    document.getElementById('planet-row').innerHTML = planetRowHtml(jd);
+    document.getElementById('scale-rulers').innerHTML = scaleSvg(jd);
+    document.getElementById('sizes').innerHTML = sizesHtml();
+    setText('solar-date', now.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }).toUpperCase());
+  }
+
+  img.onload = () => { status.classList.add('hidden'); };
+  img.onerror = () => { status.innerHTML = 'NASA image unavailable.<br><br>Check the network connection.'; };
+
+  let minutes = 0;
+  function everything(bust) {
+    const now = new Date();
+    tick();
+    renderMoon(now, bust);
+    renderDetails(now);
+    if (bust || minutes % 5 === 0) renderSolar(now);
+  }
+  tick();
+  everything(false);
+  document.fonts.ready.then(fitTime);
+  setInterval(() => { minutes++; everything(false); }, 60000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') everything(true); });
+
+  // After two quiet minutes anywhere but the top, glide back to page one
   let idleTimer = null, glide = null;
   function glideToTop() {
-    const from = window.pageYOffset;
-    const t0 = Date.now();
+    const from = window.pageYOffset, t0 = Date.now();
     glide = setInterval(() => {
-      const p = Math.min(1, (Date.now() - t0) / 700);
+      const p = Math.min(1, (Date.now() - t0) / 800);
       window.scrollTo(0, from * (1 - p * p * (3 - 2 * p)));
       if (p === 1) { clearInterval(glide); glide = null; }
     }, 16);
@@ -757,49 +1133,20 @@ window.addEventListener('load', () => {
   window.addEventListener('scroll', touched);
   window.addEventListener('touchstart', touched);
 
-  // Match time width to phase-name width using off-screen probe spans
-  function fitTime() {
-    const phaseEl = document.getElementById('phase-name');
-    const timeEl  = document.getElementById('time-display');
-
-    // Measure actual rendered text width of the phase name
-    const cs = getComputedStyle(phaseEl);
-    const phaseProbe = document.createElement('span');
-    phaseProbe.style.cssText =
-      'position:absolute;visibility:hidden;white-space:nowrap;' +
-      'font-family:' + cs.fontFamily + ';' +
-      'font-size:'   + cs.fontSize   + ';' +
-      'font-weight:' + cs.fontWeight + ';' +
-      'font-style:'  + cs.fontStyle  + ';' +
-      'letter-spacing:' + cs.letterSpacing + ';';
-    phaseProbe.textContent = phaseEl.textContent;
-    document.body.appendChild(phaseProbe);
-    const target = phaseProbe.offsetWidth;
-    document.body.removeChild(phaseProbe);
-
-    // Binary search: find the font-size where time text hits that width
-    const ct = getComputedStyle(timeEl);
-    const timeProbe = document.createElement('span');
-    timeProbe.style.cssText =
-      'position:absolute;visibility:hidden;white-space:nowrap;' +
-      'font-family:' + ct.fontFamily + ';' +
-      'font-weight:' + ct.fontWeight + ';' +
-      'letter-spacing:' + ct.letterSpacing + ';';
-    timeProbe.textContent = timeEl.textContent;
-    document.body.appendChild(timeProbe);
-
-    let lo = 10, hi = 600;
-    while (hi - lo > 0.5) {
-      const mid = (lo + hi) / 2;
-      timeProbe.style.fontSize = mid + 'px';
-      if (timeProbe.offsetWidth < target) lo = mid;
-      else hi = mid;
-    }
-    document.body.removeChild(timeProbe);
-    timeEl.style.fontSize = Math.floor(lo) + 'px';
+  // Keep an always-on tablet current: pick up new versions of this page, and start fresh each night
+  const BUILD = (document.querySelector('meta[name="build"]') || { content: '' }).content;
+  function checkForUpdate() {
+    if (!window.fetch || !BUILD) return;
+    fetch('version.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(r => r.json())
+      .then(v => { if (v && v.build && v.build !== BUILD) location.reload(); })
+      .catch(() => {});
   }
-
-  document.fonts.ready.then(fitTime);
+  setInterval(checkForUpdate, 30 * 60000);
+  setInterval(() => {
+    const n = new Date();
+    if (n.getHours() === 4 && n.getMinutes() === 0 && performance.now() > 3600000) location.reload();
+  }, 60000);
 });
 </script>
 </body>
