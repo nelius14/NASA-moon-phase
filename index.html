@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Moon">
   <title>Moon Phase</title>
-  <meta name="build" content="83be92d303">
+  <meta name="build" content="0ba7c14bf2">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inconsolata:wght@300;400&display=swap" rel="stylesheet">
@@ -297,6 +297,10 @@
     .pill.glare { background: #3b3b3b; color: #d8d2bf; }
     .pill.tele { background: #6b5a86; color: #f0e9ff; }
     .pill.here { border: 1px solid rgba(191,224,255,.7); color: #bfe0ff; }
+    .rs { font-family: 'Inconsolata', monospace; font-size: .66rem; letter-spacing: .05em; color: rgba(190,182,160,.85); margin-bottom: 2px; white-space: nowrap; }
+    .rs.up { color: #eee4c6; }
+    .moon-dot.sun { background: #ffd98a; border-color: #ffd98a; }
+    .moon-dot.sun.set { background: transparent; }
     .lt { font-family: 'Inconsolata', monospace; font-size: .68rem; letter-spacing: .06em; color: rgba(205,197,175,.92); margin-top: 2px; }
 
     /* page three: true sizes */
@@ -413,10 +417,26 @@
       </div>
     </div>
   </div>
+  <div class="details-grid" style="margin-top:2.2rem">
+    <div>
+      <div class="card-title">Sun in London</div>
+      <div class="events" id="sun-rows">
+        <div class="event"><span class="moon-dot sun"></span><div class="event-text"><div class="event-name" id="d-sunrise-when">—</div><div class="event-days" id="d-sunrise-in">Sunrise</div></div></div>
+        <div class="event"><span class="moon-dot sun set"></span><div class="event-text"><div class="event-name" id="d-sunset-when">—</div><div class="event-days" id="d-sunset-in">Sunset</div></div></div>
+      </div>
+    </div>
+    <div>
+      <div class="card-title">Moon in London</div>
+      <div class="events" id="moon-rows">
+        <div class="event"><span class="moon-dot"></span><div class="event-text"><div class="event-name" id="d-moonrise-when">—</div><div class="event-days" id="d-moonrise-in">Moonrise</div></div></div>
+        <div class="event"><span class="moon-dot far"></span><div class="event-text"><div class="event-name" id="d-moonset-when">—</div><div class="event-days" id="d-moonset-in">Moonset</div></div></div>
+      </div>
+    </div>
+  </div>
   <div class="credit">
     Positions: the Moon and Sun from Meeus, Astronomical Algorithms; the planets from NASA/JPL's approximate orbital elements (accurate to about a tenth of a degree).<br>
     Moon photograph: NASA Scientific Visualization Studio, Moon Phase and Libration 2026 (Lunar Reconnaissance Orbiter). Public domain.<br>
-    Planet photographs: NASA missions (MESSENGER, Mariner 10, Apollo 17, Hubble, Cassini, Voyager 2, New Horizons), via Wikimedia Commons.
+    Planet photographs: NASA missions (MESSENGER, Mariner 10, Apollo 17, Hubble, Cassini, Voyager 2, New Horizons), via Wikimedia Commons, all in the public domain. Rise and set times are for London (51.51° N, 0.13° W), to within a couple of minutes.
   </div>
 </section>
 
@@ -445,7 +465,17 @@ const MOON_LON_TERMS = [
   [0,1,2,0,-2120],[0,2,0,0,-2069],[2,-2,-1,0,2048]
 ];
 
-function elongation(jd) {
+const MOON_LAT_TERMS = [
+  [0,0,0,1,5128122],[0,0,1,1,280602],[0,0,1,-1,277693],[2,0,0,-1,173237],[2,0,-1,1,55413],
+  [2,0,-1,-1,46271],[2,0,0,1,32573],[0,0,2,1,17198],[2,0,1,-1,9266],[0,0,2,-1,8822],
+  [2,-1,0,-1,8216],[2,0,-2,-1,4324],[2,0,1,1,4200],[2,1,0,-1,-3359],[2,-1,-1,1,2463],
+  [2,-1,0,1,2211],[2,-1,-1,-1,2065],[0,1,-1,-1,-1870],[4,0,-1,-1,1828],[0,1,0,1,-1794],
+  [0,0,0,3,-1749],[0,1,-1,1,-1565],[1,0,0,1,-1491],[0,1,1,1,-1475],[0,1,1,-1,-1410],
+  [0,1,0,-1,-1344],[1,0,0,-1,-1335],[0,0,3,1,1107],[4,0,0,-1,1021],[4,0,-1,1,833]
+];
+
+// Moon's ecliptic longitude and latitude of date, degrees (Meeus ch. 47, truncated series).
+function moonLonLat(jd) {
   const T = (jd - 2451545.0) / 36525;
   const Lm = norm360(218.3164477 + 481267.88123421 * T);
   const D  = norm360(297.8501921 + 445267.1114034 * T);
@@ -453,20 +483,30 @@ function elongation(jd) {
   const Mp = norm360(134.9633964 + 477198.8675055 * T);
   const F  = norm360(93.2720950 + 483202.0175233 * T);
   const E  = 1 - 0.002516 * T - 0.0000074 * T * T;
-  let sum = 0;
-  for (const [d, m, mp, f, c] of MOON_LON_TERMS) {
-    const e = m === 0 ? 1 : (Math.abs(m) === 1 ? E : E * E);
-    sum += c * e * Math.sin((d * D + m * M + mp * Mp + f * F) * RAD);
-  }
-  const A1 = 119.75 + 131.849 * T, A2 = 53.09 + 479264.290 * T;
-  sum += 3958 * Math.sin(A1 * RAD) + 1962 * Math.sin((Lm - F) * RAD) + 318 * Math.sin(A2 * RAD);
-  const moonLon = Lm + sum / 1e6;
+  const eFor = m => m === 0 ? 1 : (Math.abs(m) === 1 ? E : E * E);
+  let lon = 0, lat = 0;
+  for (const [d, m, mp, f, c] of MOON_LON_TERMS) lon += c * eFor(m) * Math.sin((d * D + m * M + mp * Mp + f * F) * RAD);
+  for (const [d, m, mp, f, c] of MOON_LAT_TERMS) lat += c * eFor(m) * Math.sin((d * D + m * M + mp * Mp + f * F) * RAD);
+  const A1 = 119.75 + 131.849 * T, A2 = 53.09 + 479264.290 * T, A3 = 313.45 + 481266.484 * T;
+  lon += 3958 * Math.sin(A1 * RAD) + 1962 * Math.sin((Lm - F) * RAD) + 318 * Math.sin(A2 * RAD);
+  lat += -2235 * Math.sin(Lm * RAD) + 382 * Math.sin(A3 * RAD) + 175 * Math.sin((A1 - F) * RAD) +
+         175 * Math.sin((A1 + F) * RAD) + 127 * Math.sin((Lm - Mp) * RAD) - 115 * Math.sin((Lm + Mp) * RAD);
+  return { lon: norm360(Lm + lon / 1e6), lat: lat / 1e6 };
+}
 
+// Sun's ecliptic longitude of date, degrees.
+function sunLongitude(jd) {
+  const T = (jd - 2451545.0) / 36525;
   const L0 = 280.46646 + 36000.76983 * T;
   const Ms = (357.52911 + 35999.05029 * T) * RAD;
   const C  = (1.914602 - 0.004817 * T) * Math.sin(Ms)
            + 0.019993 * Math.sin(2 * Ms) + 0.000289 * Math.sin(3 * Ms);
-  return norm360(moonLon - (L0 + C));
+  return norm360(L0 + C);
+}
+
+// Degrees the Moon is ahead of the Sun along the ecliptic: 0 new, 90 first quarter, 180 full.
+function elongation(jd) {
+  return norm360(moonLonLat(jd).lon - sunLongitude(jd));
 }
 
 function moonData(date) {
@@ -629,6 +669,64 @@ function distanceExtremes(fromJd, toJd) {
   return out;
 }
 
+// ── Rise and set times, London ───────────────────────────────
+const LONDON = { lat: 51.5074, lon: -0.1278 }; // degrees, east positive
+const PRECESSION_DEG_PER_CENTURY = 1.396971;   // moves J2000 longitudes to the equinox of date
+
+function eclipticToEquatorial(lon, lat, jd) {
+  const eps = (23.439291 - 0.0130042 * (jd - 2451545) / 36525) * RAD;
+  const l = lon * RAD, b = lat * RAD;
+  const ra = Math.atan2(Math.sin(l) * Math.cos(eps) - Math.tan(b) * Math.sin(eps), Math.cos(l));
+  const dec = Math.asin(Math.sin(b) * Math.cos(eps) + Math.cos(b) * Math.sin(eps) * Math.sin(l));
+  return { ra: norm360(ra / RAD), dec: dec / RAD };
+}
+
+// Right ascension and declination of date, plus the altitude of the horizon edge to aim for.
+function skyPosition(name, jd) {
+  if (name === 'Sun') return Object.assign(eclipticToEquatorial(sunLongitude(jd), 0, jd), { h0: -0.8333 });
+  if (name === 'Moon') {
+    const m = moonLonLat(jd), parallax = Math.asin(6378.14 / moonDistance(jd)) / RAD;
+    return Object.assign(eclipticToEquatorial(m.lon, m.lat, jd), { h0: 0.7275 * parallax - 0.5667 });
+  }
+  const E = planetPosition('Earth', jd), P = planetPosition(name, jd);
+  const g = [P[0] - E[0], P[1] - E[1], P[2] - E[2]];
+  const lon = norm360(Math.atan2(g[1], g[0]) / RAD + PRECESSION_DEG_PER_CENTURY * (jd - 2451545) / 36525);
+  const lat = Math.atan2(g[2], Math.hypot(g[0], g[1])) / RAD;
+  return Object.assign(eclipticToEquatorial(lon, lat, jd), { h0: -0.5667 });
+}
+
+// Height above the London horizon, in degrees, minus the horizon edge: positive means up.
+function heightAboveHorizon(name, jd) {
+  const p = skyPosition(name, jd);
+  const gmst = norm360(280.46061837 + 360.98564736629 * (jd - 2451545));
+  const h = norm360(gmst + LONDON.lon - p.ra) * RAD, phi = LONDON.lat * RAD, dec = p.dec * RAD;
+  const alt = Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(h)) / RAD;
+  return alt - p.h0;
+}
+
+// The next rising and setting after `from` (a Date), searched over the coming 26 hours.
+function nextRiseSet(name, from) {
+  const t0 = toJD(from), STEP = 10 / 1440;
+  const out = { up: heightAboveHorizon(name, t0) > 0, rise: null, set: null };
+  const toDate = jd => new Date((jd - 2440587.5) * 86400000);
+  let prev = heightAboveHorizon(name, t0);
+  for (let t = t0 + STEP; t <= t0 + 26 / 24 && !(out.rise && out.set); t += STEP) {
+    const cur = heightAboveHorizon(name, t);
+    if ((prev <= 0) !== (cur <= 0)) {
+      let lo = t - STEP, hi = t;
+      const rising = cur > 0;
+      for (let i = 0; i < 30; i++) {
+        const mid = (lo + hi) / 2;
+        if ((heightAboveHorizon(name, mid) > 0) === rising) hi = mid; else lo = mid;
+      }
+      if (rising && !out.rise) out.rise = toDate(hi);
+      if (!rising && !out.set) out.set = toDate(hi);
+    }
+    prev = cur;
+  }
+  return out;
+}
+
 // ── Planets ──────────────────────────────────────────────────
 // JPL "Approximate Positions of the Planets", table 1 (valid 1800-2050), J2000 mean ecliptic.
 // [a, da, e, de, I, dI, L, dL, varpi, dvarpi, Omega, dOmega], rates per Julian century.
@@ -737,6 +835,7 @@ const fmtAway = (d, now) => {
   const h = (d - now) / 3600000;
   return h < 24 ? Math.max(1, Math.round(h)) + ' h' : Math.round(h / 24) + ' days';
 };
+const fmtClock = d => d.toLocaleTimeString('en-GB', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit' });
 const setText = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
 const svgImage = (n, cx, cy, w) => {
   const h = n === 'Saturn' ? w * SATURN_ASPECT : w;
@@ -932,7 +1031,7 @@ function ribbonSvg(jd, now) {
 }
 
 // ── Page two: one row, Mercury to Pluto ──
-function planetRowHtml(jd) {
+function planetRowHtml(jd, now) {
   let h = '';
   for (const n of PLANETS) {
     const sky = n === 'Earth' ? null : planetSky(n, jd);
@@ -948,9 +1047,15 @@ function planetRowHtml(jd) {
     if (n === 'Saturn') moons = '<span class="moon" style="width:4.5px;height:4.5px;left:calc(50% + ' + (w / 2 + 2) + 'px);top:30px"></span>';
     const light = n === 'Earth' ? 'MOON ' + (moonDistance(jd) / 299792.458).toFixed(1) + ' S AWAY' : 'LIGHT ' + lightTime(sky.delta * AU_MIN);
     const h2 = n === 'Saturn' ? w * SATURN_ASPECT : w;
+    // when it is up over London: the Sun's times stand in for Earth
+    const rs = nextRiseSet(n === 'Earth' ? 'Sun' : n, now);
+    let when;
+    if (n === 'Earth') when = rs.up ? 'SUN SETS ' + (rs.set ? fmtClock(rs.set) : '—') : 'SUN RISES ' + (rs.rise ? fmtClock(rs.rise) : '—');
+    else if (rs.up) when = rs.set ? 'UP · SETS ' + fmtClock(rs.set) : 'UP ALL NIGHT';
+    else when = rs.rise ? 'RISES ' + fmtClock(rs.rise) : 'BELOW HORIZON';
     h += '<div class="c"><div class="ic"><img src="' + planetFile(n) + '" alt="" style="width:' + w.toFixed(1) + 'px;height:' + h2.toFixed(1) + 'px">' + moons + '</div>' +
          '<div class="pn">' + n + '</div><div class="au">' + r.toFixed(2) + ' AU</div>' +
-         '<span class="pill ' + pill.kind + '">' + pill.txt + '</span><div class="lt">' + light + '</div></div>';
+         '<span class="pill ' + pill.kind + '">' + pill.txt + '</span><div class="rs' + (rs.up ? ' up' : '') + '">' + when + '</div><div class="lt">' + light + '</div></div>';
   }
   return h;
 }
@@ -1081,6 +1186,18 @@ window.addEventListener('load', () => {
     Array.prototype.slice.call(document.querySelectorAll('#phase-rows > .event'))
       .sort((a, b) => a.getAttribute('data-t') - b.getAttribute('data-t'))
       .forEach(el => el.parentNode.appendChild(el));
+    for (const [body, key] of [['Sun', 'sun'], ['Moon', 'moon']]) {
+      const rs = nextRiseSet(body, now);
+      for (const [kind, when] of [['rise', rs.rise], ['set', rs.set]]) {
+        const row = document.getElementById('d-' + key + kind + '-when').parentNode.parentNode;
+        setText('d-' + key + kind + '-when', when ? fmtWhen(when) : '—');
+        setText('d-' + key + kind + '-in', (kind === 'rise' ? body + 'rise' : body + 'set') + (when ? ' · in ' + fmtAway(when, now) : ''));
+        row.setAttribute('data-t', String(when ? when.getTime() : 9e15));
+      }
+      Array.prototype.slice.call(document.querySelectorAll('#' + key + '-rows > .event'))
+        .sort((a, b) => a.getAttribute('data-t') - b.getAttribute('data-t'))
+        .forEach(el => el.parentNode.appendChild(el));
+    }
     const km = moonDistance(jd), width = 2 * Math.asin(1737.4 / km) * 180 / Math.PI * 60;
     setText('d-size', width.toFixed(1) + '′ (' + (width / 60).toFixed(2) + '°)');
     const peri = nextDistanceExtreme(now, true), apo = nextDistanceExtreme(now, false);
@@ -1092,7 +1209,7 @@ window.addEventListener('load', () => {
     const jd = toJD(now);
     document.getElementById('orrery').innerHTML = orrerySvg(jd);
     document.getElementById('ribbon').innerHTML = ribbonSvg(jd, now);
-    document.getElementById('planet-row').innerHTML = planetRowHtml(jd);
+    document.getElementById('planet-row').innerHTML = planetRowHtml(jd, now);
     document.getElementById('scale-rulers').innerHTML = scaleSvg(jd);
     document.getElementById('sizes').innerHTML = sizesHtml();
     setText('solar-date', now.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }).toUpperCase());

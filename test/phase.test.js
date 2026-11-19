@@ -9,8 +9,8 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1].split('// ── UI')[0];
 const ctx = {};
 vm.createContext(ctx);
-vm.runInContext(script + ';this.api={elongation,toJD,moonData,phaseName,frameUrl,nextPhaseEvent,moonDistance,nextDistanceExtreme,lunation,distanceExtremes,planetPosition,planetSky,skyKind,PLANETS}', ctx);
-const { elongation, toJD, moonData, phaseName, frameUrl, nextPhaseEvent, moonDistance, nextDistanceExtreme, lunation, distanceExtremes, planetPosition, planetSky, skyKind, PLANETS } = ctx.api;
+vm.runInContext(script + ';this.api={elongation,toJD,moonData,phaseName,frameUrl,nextPhaseEvent,moonDistance,nextDistanceExtreme,lunation,distanceExtremes,planetPosition,planetSky,skyKind,PLANETS,nextRiseSet}', ctx);
+const { elongation, toJD, moonData, phaseName, frameUrl, nextPhaseEvent, moonDistance, nextDistanceExtreme, lunation, distanceExtremes, planetPosition, planetSky, skyKind, PLANETS, nextRiseSet } = ctx.api;
 
 // [label, UTC time, expected elongation in degrees]
 const events = [
@@ -108,3 +108,21 @@ console.log('ok   sky pills');
 const ext = distanceExtremes(jdPl - 14.5, jdPl + 14.5);
 assert(ext.some(e => e.closest) && ext.some(e => !e.closest), 'window should hold a perigee and an apogee');
 console.log('ok   distance extremes', ext.map(e => (e.closest ? 'perigee ' : 'apogee ') + e.date.toISOString().slice(0, 10)).join(', '));
+
+// Rise and set over London (51.51 N, 0.13 W). Reference times are NASA/JPL Horizons, UT.
+const RTS = {"2026-11-19T12:00:00Z": {"Sun": [["2026-11-19T16:08:00Z", "s"], ["2026-11-20T07:26:00Z", "r"], ["2026-11-20T16:06:00Z", "s"]], "Moon": [["2026-11-19T13:38:00Z", "r"], ["2026-11-20T02:01:00Z", "s"], ["2026-11-20T13:50:00Z", "r"]], "Mercury": [["2026-11-19T15:35:00Z", "s"], ["2026-11-20T05:29:00Z", "r"], ["2026-11-20T15:33:00Z", "s"]], "Venus": [["2026-11-19T14:49:00Z", "s"], ["2026-11-20T04:15:00Z", "r"], ["2026-11-20T14:46:00Z", "s"]], "Mars": [["2026-11-19T13:27:00Z", "s"], ["2026-11-19T22:47:00Z", "r"], ["2026-11-20T13:24:00Z", "s"]], "Jupiter": [["2026-11-19T13:17:00Z", "s"], ["2026-11-19T22:45:00Z", "r"], ["2026-11-20T13:13:00Z", "s"]], "Saturn": [["2026-11-19T14:32:00Z", "r"], ["2026-11-20T02:48:00Z", "s"], ["2026-11-20T14:28:00Z", "r"]], "Uranus": [["2026-11-19T16:14:00Z", "r"], ["2026-11-20T08:11:00Z", "s"], ["2026-11-20T16:10:00Z", "r"]], "Neptune": [["2026-11-19T14:14:00Z", "r"], ["2026-11-20T02:15:00Z", "s"], ["2026-11-20T14:10:00Z", "r"]], "Pluto": [["2026-11-19T12:41:00Z", "r"], ["2026-11-19T20:25:00Z", "s"], ["2026-11-20T12:37:00Z", "r"]]}, "2026-06-21T12:00:00Z": {"Sun": [["2026-06-21T20:23:00Z", "s"], ["2026-06-22T03:43:00Z", "r"]], "Moon": [["2026-06-21T23:47:00Z", "s"], ["2026-06-22T12:55:00Z", "r"]], "Mercury": [["2026-06-21T21:46:00Z", "s"], ["2026-06-22T05:42:00Z", "r"]], "Venus": [["2026-06-21T22:44:00Z", "s"], ["2026-06-22T07:00:00Z", "r"]], "Mars": [["2026-06-21T17:17:00Z", "s"], ["2026-06-22T01:46:00Z", "r"], ["2026-06-22T17:18:00Z", "s"]], "Jupiter": [["2026-06-21T22:03:00Z", "s"], ["2026-06-22T06:01:00Z", "r"]], "Saturn": [["2026-06-21T13:17:00Z", "s"], ["2026-06-22T00:33:00Z", "r"], ["2026-06-22T13:13:00Z", "s"]], "Uranus": [["2026-06-21T18:05:00Z", "s"], ["2026-06-22T02:06:00Z", "r"]], "Neptune": [["2026-06-21T12:27:00Z", "s"], ["2026-06-22T00:11:00Z", "r"], ["2026-06-22T12:23:00Z", "s"]], "Pluto": [["2026-06-21T22:38:00Z", "r"], ["2026-06-22T06:29:00Z", "s"]]}};
+let worstMin = 0;
+for (const [from, bodies] of Object.entries(RTS)) {
+  for (const [name, events] of Object.entries(bodies)) {
+    const got = nextRiseSet(name, new Date(from));
+    const wantRise = events.find(e => e[1] === 'r'), wantSet = events.find(e => e[1] === 's');
+    for (const [kind, g, w] of [['rise', got.rise, wantRise], ['set', got.set, wantSet]]) {
+      if (!w) continue;
+      assert(g, `${name} ${kind} missing after ${from}`);
+      const off = Math.abs(g - new Date(w[0])) / 60000;
+      worstMin = Math.max(worstMin, off);
+      assert(off < 4, `${name} ${kind} off by ${off.toFixed(1)} min on ${from}`);
+    }
+  }
+}
+console.log('ok   rise and set times within', worstMin.toFixed(1), 'min of Horizons for the Sun, Moon and all planets');
