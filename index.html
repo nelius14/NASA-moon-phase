@@ -333,12 +333,6 @@ function phaseName(p) {
   return 'Waning Crescent';
 }
 
-function daysTo(age, frac) {
-  let d = frac * CYCLE - age;
-  if (d <= 0.05) d += CYCLE;
-  return d;
-}
-
 // ── NASA SVS frame lookup ────────────────────────────────────
 // SVS-5187: 8784 frames, one per UTC hour of 2024 (leap year).
 // Frame 1 = Jan 1, 2024 00:00 UTC. Public domain.
