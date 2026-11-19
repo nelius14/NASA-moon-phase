@@ -19,7 +19,7 @@ const fail = msg => { console.error('FAIL', msg); failed = true; };
 
 // Features Safari 12 lacks that the CSS checker can miss or only half-flag.
 const banned = [
-  [/\bgap\s*:/, 'flexbox gap (Safari 14.1+); use margins'],
+  [/(^|[^-\w])gap\s*:/, 'flexbox gap (Safari 14.1+); use margins or grid-gap'],
   [/\bclamp\(/, 'clamp() (Safari 13.1+)'],
   [/\binset\s*:/, 'inset shorthand (Safari 14.1+)'],
   [/aspect-ratio\s*:/, 'aspect-ratio (Safari 15+)'],
