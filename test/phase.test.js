@@ -9,8 +9,8 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1].split('// ── UI')[0];
 const ctx = {};
 vm.createContext(ctx);
-vm.runInContext(script + ';this.api={elongation,toJD,moonData,phaseName,frameUrl,nextPhaseEvent,moonDistance,nextDistanceExtreme,lunation,distanceExtremes,planetPosition,planetSky,skyKind,PLANETS,nextRiseSet}', ctx);
-const { elongation, toJD, moonData, phaseName, frameUrl, nextPhaseEvent, moonDistance, nextDistanceExtreme, lunation, distanceExtremes, planetPosition, planetSky, skyKind, PLANETS, nextRiseSet } = ctx.api;
+vm.runInContext(script + ';this.api={elongation,toJD,moonData,phaseName,frameUrl,nextPhaseEvent,moonDistance,nextDistanceExtreme,lunation,distanceExtremes,planetPosition,planetSky,skyKind,PLANETS,nextRiseSet,topocentricMoonSun,londonSolarEclipse,lunarEclipseFromLondon,nextEclipses,eclipseGreatest,ECLIPSES}', ctx);
+const { elongation, toJD, moonData, phaseName, frameUrl, nextPhaseEvent, moonDistance, nextDistanceExtreme, lunation, distanceExtremes, planetPosition, planetSky, skyKind, PLANETS, nextRiseSet, topocentricMoonSun, londonSolarEclipse, lunarEclipseFromLondon, nextEclipses, eclipseGreatest, ECLIPSES } = ctx.api;
 
 // [label, UTC time, expected elongation in degrees]
 const events = [
@@ -126,3 +126,21 @@ for (const [from, bodies] of Object.entries(RTS)) {
   }
 }
 console.log('ok   rise and set times within', worstMin.toFixed(1), 'min of Horizons for the Sun, Moon and all planets');
+
+// Eclipses. The London sky is checked against the partial solar eclipse of 20 March 2015, where
+// NASA/JPL Horizons gives the Sun and Moon 5.01 arcminutes apart at 09:31 UT, Sun 28.61 degrees up.
+const p15 = topocentricMoonSun(toJD(Date.UTC(2015, 2, 20, 9, 31)));
+assert(Math.abs(p15.sepArcmin - 5.01) < 0.3, `separation ${p15.sepArcmin}`);
+assert(Math.abs(p15.sunAltDeg - 28.61) < 0.1, `sun altitude ${p15.sunAltDeg}`);
+const l15 = londonSolarEclipse(new Date(Date.UTC(2015, 2, 20, 9, 46)));
+assert(l15.cover > 0.82 && l15.cover < 0.88, `cover ${l15.cover}`);
+assert(Math.abs(l15.when - Date.UTC(2015, 2, 20, 9, 32)) < 6 * 60000, `peak ${l15.when.toISOString()}`);
+console.log('ok   London sees', Math.round(l15.cover * 100) + '% of the Sun on 20 March 2015, as NASA/JPL puts the Moon 5.0 arcmin from its centre');
+
+// Catalogue sanity: in date order, and the next ones are the known 2027 pair
+const next = nextEclipses(new Date('2026-11-19T20:00:00Z'), 3);
+assert.strictEqual(next[0][1], '2027-02-06');
+assert.strictEqual(next[2][1], '2027-07-18');
+for (let i = 1; i < ECLIPSES.length; i++) assert(eclipseGreatest(ECLIPSES[i]) >= eclipseGreatest(ECLIPSES[i - 1]), 'eclipses out of order');
+assert.strictEqual(lunarEclipseFromLondon(['L', '2026-03-03', '11:34:52', 'Total', '1.151', '03h27m 00h58m', '']), 'none');
+console.log('ok   eclipse table in order,', ECLIPSES.length, 'eclipses to', ECLIPSES[ECLIPSES.length - 1][1]);

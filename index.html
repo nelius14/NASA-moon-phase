@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Moon">
   <title>Moon Phase</title>
-  <meta name="build" content="0ba7c14bf2">
+  <meta name="build" content="c77017d9d3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inconsolata:wght@300;400&display=swap" rel="stylesheet">
@@ -299,6 +299,10 @@
     .pill.here { border: 1px solid rgba(191,224,255,.7); color: #bfe0ff; }
     .rs { font-family: 'Inconsolata', monospace; font-size: .66rem; letter-spacing: .05em; color: rgba(190,182,160,.85); margin-bottom: 2px; white-space: nowrap; }
     .rs.up { color: #eee4c6; }
+    .moon-dot.ecl.solar { background: radial-gradient(circle, #000 0, #000 52%, #ffd98a 56%); border-color: #ffd98a; }
+    .moon-dot.ecl.lunar { background: #a85a3c; border-color: #a85a3c; }
+    .event-lon { font-family: 'Inconsolata', monospace; font-size: .72rem; letter-spacing: .04em; color: #eee4c6; margin-top: 2px; }
+    .eclipse-note { font-family: 'Inconsolata', monospace; font-size: .7rem; letter-spacing: .05em; color: rgba(222,214,190,.95); }
     .moon-dot.sun { background: #ffd98a; border-color: #ffd98a; }
     .moon-dot.sun.set { background: transparent; }
     .lt { font-family: 'Inconsolata', monospace; font-size: .68rem; letter-spacing: .06em; color: rgba(205,197,175,.92); margin-top: 2px; }
@@ -433,8 +437,12 @@
       </div>
     </div>
   </div>
+  <div class="card-title" style="margin-top:2.4rem">Eclipses</div>
+  <div class="eclipse-note">Never look at the Sun without proper eclipse glasses. The Moon at a partial or total lunar eclipse is safe to watch.</div>
+  <div class="details-grid" id="eclipse-rows" style="margin-top:1rem"></div>
   <div class="credit">
     Positions: the Moon and Sun from Meeus, Astronomical Algorithms; the planets from NASA/JPL's approximate orbital elements (accurate to about a tenth of a degree).<br>
+    Eclipse dates: NASA/GSFC Eclipse Web Site, Fred Espenak. London coverage is calculated here.<br>
     Moon photograph: NASA Scientific Visualization Studio, Moon Phase and Libration 2026 (Lunar Reconnaissance Orbiter). Public domain.<br>
     Planet photographs: NASA missions (MESSENGER, Mariner 10, Apollo 17, Hubble, Cassini, Voyager 2, New Horizons), via Wikimedia Commons, all in the public domain. Rise and set times are for London (51.51° N, 0.13° W), to within a couple of minutes.
   </div>
@@ -725,6 +733,143 @@ function nextRiseSet(name, from) {
     prev = cur;
   }
   return out;
+}
+
+// ── Solar eclipse as seen from London ─────────────────────────
+// Topocentric Sun and Moon (Meeus ch. 40 parallax), then how much of the Sun the Moon covers.
+function topocentricMoonSun(jd) {
+  const gmst = norm360(280.46061837 + 360.98564736629 * (jd - 2451545));
+  const lst = norm360(gmst + LONDON.lon) * RAD, phi = LONDON.lat * RAD;
+  const u = Math.atan(0.99664719 * Math.tan(phi));
+  const rhoSin = 0.99664719 * Math.sin(u), rhoCos = Math.cos(u);
+  const m = moonLonLat(jd), dist = moonDistance(jd);
+  const mEq = eclipticToEquatorial(m.lon, m.lat, jd), sEq = eclipticToEquatorial(sunLongitude(jd), 0, jd);
+  const ra = mEq.ra * RAD, dec = mEq.dec * RAD, sinPi = 6378.14 / dist, H = lst - ra;
+  const dRa = Math.atan2(-rhoCos * sinPi * Math.sin(H), Math.cos(dec) - rhoCos * sinPi * Math.cos(H));
+  const decT = Math.atan2((Math.sin(dec) - rhoSin * sinPi) * Math.cos(dRa), Math.cos(dec) - rhoCos * sinPi * Math.cos(H));
+  const raT = ra + dRa;
+  const sRa = sEq.ra * RAD, sDec = sEq.dec * RAD;
+  // altitude of the Sun, and the Moon's distance from the observer (a little less than from Earth's centre when high up)
+  const sinAltSun = Math.sin(phi) * Math.sin(sDec) + Math.cos(phi) * Math.cos(sDec) * Math.cos(lst - sRa);
+  const sinAltMoon = Math.sin(phi) * Math.sin(decT) + Math.cos(phi) * Math.cos(decT) * Math.cos(lst - raT);
+  const sep = Math.acos(Math.max(-1, Math.min(1, Math.sin(decT) * Math.sin(sDec) + Math.cos(decT) * Math.cos(sDec) * Math.cos(raT - sRa))));
+  const M = (357.52911 + 35999.05029 * (jd - 2451545) / 36525) * RAD;
+  const sunAu = 1.00014 - 0.01671 * Math.cos(M) - 0.00014 * Math.cos(2 * M);
+  return {
+    sepArcmin: sep / RAD * 60,
+    sunRadArcmin: 959.63 / sunAu / 60,
+    moonRadArcmin: Math.asin(1737.4 / (dist - 6371 * sinAltMoon)) / RAD * 60,
+    sunAltDeg: Math.asin(sinAltSun) / RAD
+  };
+}
+
+// Fraction of the Sun's disc covered, from the two radii and the distance between centres.
+function discOverlap(rSun, rMoon, d) {
+  if (d >= rSun + rMoon) return 0;
+  if (d <= Math.abs(rMoon - rSun)) return rMoon >= rSun ? 1 : (rMoon * rMoon) / (rSun * rSun);
+  const a = Math.acos((d * d + rSun * rSun - rMoon * rMoon) / (2 * d * rSun));
+  const b = Math.acos((d * d + rMoon * rMoon - rSun * rSun) / (2 * d * rMoon));
+  const area = rSun * rSun * (a - Math.sin(2 * a) / 2) + rMoon * rMoon * (b - Math.sin(2 * b) / 2);
+  return area / (Math.PI * rSun * rSun);
+}
+
+// Greatest eclipse in London: { cover: 0..1, when: Date, sunAlt } or null when the Sun is not covered while up.
+function londonSolarEclipse(greatest) {
+  const g = toJD(greatest), STEP = 2 / 1440;
+  let best = null;
+  for (let t = g - 5 / 24; t <= g + 5 / 24; t += STEP) {
+    const p = topocentricMoonSun(t);
+    if (p.sunAltDeg < -0.8) continue; // Sun below the horizon
+    const cover = discOverlap(p.sunRadArcmin, p.moonRadArcmin, p.sepArcmin);
+    if (cover > 0.001 && (!best || cover > best.cover)) best = { cover, when: new Date((t - 2440587.5) * 86400000), sunAlt: p.sunAltDeg };
+  }
+  return best;
+}
+
+// ── Eclipses ─────────────────────────────────────────────────
+// NASA/GSFC eclipse catalogue (Fred Espenak), 2027 to 2040. Times are Terrestrial Dynamical Time.
+// [S solar / L lunar, date, TD time, type, magnitude, duration, where it is seen or its path]
+const ECLIPSES = [
+  ["S", "2027-02-06", "16:00:47", "Annular", "0.928", "07m51s", "Chile, Argentina, Atlantic"],
+  ["L", "2027-02-20", "23:14:06", "Penumbral", "-0.057", "-", "Americas, Europe, Africa, Asia"],
+  ["L", "2027-07-18", "16:04:09", "Penumbral", "-1.068", "-", "e Africa, Asia, Australia, Pacific"],
+  ["S", "2027-08-02", "10:07:49", "Total", "1.079", "06m23s", "Morocco, Spain, Algeria, Libya, Egypt, Saudi Arabia, Yemen, Somalia"],
+  ["L", "2027-08-17", "07:14:59", "Penumbral", "-0.525", "-", "Pacific, Americas"],
+  ["L", "2028-01-12", "04:14:13", "Partial", "0.066", "00h56m", "Americas, Europe, Africa"],
+  ["S", "2028-01-26", "15:08:58", "Annular", "0.921", "10m27s", "Ecuador, Peru, Brazil, Suriname, Spain, Portugal"],
+  ["L", "2028-07-06", "18:20:57", "Partial", "0.389", "02h21m", "Europe, Africa, Asia, Australia"],
+  ["S", "2028-07-22", "02:56:39", "Total", "1.056", "05m10s", "Australia, N. Z."],
+  ["L", "2028-12-31", "16:53:15", "Total", "1.246", "03h29m 01h11m", "Europe, Africa, Asia, Australia, Pacific"],
+  ["S", "2029-01-14", "17:13:47", "Partial", "0.871", "-", "N. America, C. America"],
+  ["S", "2029-06-12", "04:06:13", "Partial", "0.458", "-", "Arctic, Scandanavia, Alaska, n Asia, n Canada"],
+  ["L", "2029-06-26", "03:23:22", "Total", "1.844", "03h40m 01h42m", "Americas, Europe, Africa, Mid East"],
+  ["S", "2029-07-11", "15:37:18", "Partial", "0.230", "-", "s Chile, s Argentina"],
+  ["S", "2029-12-05", "15:03:57", "Partial", "0.891", "-", "s Argentina, s Chile, Antarctica"],
+  ["L", "2029-12-20", "22:43:12", "Total", "1.117", "03h33m 00h54m", "Americas, Europe, Africa, Asia"],
+  ["S", "2030-06-01", "06:29:13", "Annular", "0.944", "05m21s", "Algeria, Tunisia, Greece, Turkey, Russia, n. China, Japan"],
+  ["L", "2030-06-15", "18:34:34", "Partial", "0.502", "02h24m", "Europe, Africa, Asia, Australia"],
+  ["S", "2030-11-25", "06:51:37", "Total", "1.047", "03m44s", "Botswana, S. Africa, Australia"],
+  ["L", "2030-12-09", "22:28:51", "Penumbral", "-0.163", "-", "Americas, Europe, Africa, Asia"],
+  ["L", "2031-05-07", "03:52:02", "Penumbral", "-0.090", "-", "Americas, Europe, Africa"],
+  ["S", "2031-05-21", "07:16:04", "Annular", "0.959", "05m26s", "Angola, Congo, Zambia, Tanzania, s. India, Malaysia, Indonesia"],
+  ["L", "2031-06-05", "11:45:17", "Penumbral", "-0.820", "-", "East Indies, Australia, Pacific"],
+  ["L", "2031-10-30", "07:46:45", "Penumbral", "-0.320", "-", "Americas"],
+  ["S", "2031-11-14", "21:07:30", "Hybrid", "1.011", "01m08s", "Hybrid: Pacific, Panama"],
+  ["L", "2032-04-25", "15:14:51", "Total", "1.191", "03h31m 01h06m", "e Africa, Asia, Australia, Pacific"],
+  ["S", "2032-05-09", "13:26:42", "Annular", "0.996", "00m22s", "s Atlantic"],
+  ["L", "2032-10-18", "19:03:40", "Total", "1.103", "03h16m 00h47m", "Africa, Europe, Asia, Australia"],
+  ["S", "2032-11-03", "05:34:12", "Partial", "0.855", "-", "Asia"],
+  ["S", "2033-03-30", "18:02:35", "Total", "1.046", "02m37s", "e Russia, Alaska"],
+  ["L", "2033-04-14", "19:13:51", "Total", "1.094", "03h35m 00h49m", "Europe, Africa, Asia, Australia"],
+  ["S", "2033-09-23", "13:54:31", "Partial", "0.689", "-", "s S. America, Antarctica"],
+  ["L", "2033-10-08", "10:56:23", "Total", "1.350", "03h22m 01h19m", "Asia, Australia, Pacific, Americas"],
+  ["S", "2034-03-20", "10:18:45", "Total", "1.046", "04m09s", "Nigeria, Cameroon, Chad, Sudan, Egypt, Saudi Arabia, Iran, Afghanistan, Pakistan, India, China"],
+  ["L", "2034-04-03", "19:06:59", "Penumbral", "-0.227", "-", "Europe, Africa, Asia, Australia"],
+  ["S", "2034-09-12", "16:19:27", "Annular", "0.974", "02m58s", "Chile, Bolivia, Argentina, Paraguay, Brazil"],
+  ["L", "2034-09-28", "02:47:37", "Partial", "0.014", "00h27m", "Americas, Europe, Africa"],
+  ["L", "2035-02-22", "09:06:12", "Penumbral", "-0.053", "-", "e Asia, Pacific, Americas"],
+  ["S", "2035-03-09", "23:05:53", "Annular", "0.992", "00m48s", "New Zealand, Pacific"],
+  ["L", "2035-08-19", "01:12:15", "Partial", "0.104", "01h17m", "Americas, Europe, Africa, Mid East"],
+  ["S", "2035-09-02", "01:56:46", "Total", "1.032", "02m54s", "China, Korea, Japan, Pacific"],
+  ["L", "2036-02-11", "22:13:06", "Total", "1.299", "03h22m 01h14m", "Americas, Europe, Africa,, Asia, w Australia"],
+  ["S", "2036-02-27", "04:46:49", "Partial", "0.629", "-", "Antarctica, s Australia, New Zealand"],
+  ["S", "2036-07-23", "10:32:06", "Partial", "0.199", "-", "s Atlantic"],
+  ["L", "2036-08-07", "02:52:32", "Total", "1.454", "03h51m 01h35m", "Americas, Europe, Africa, w Asia"],
+  ["S", "2036-08-21", "17:25:45", "Partial", "0.862", "-", "Alaska, Canada, Arctic, w Europe, nw Africa"],
+  ["S", "2037-01-16", "09:48:55", "Partial", "0.705", "-", "n Africa, Europe, Mid East, w Asia"],
+  ["L", "2037-01-31", "14:01:38", "Total", "1.207", "03h17m 01h04m", "e Europe, e Africa, Asia, Australia, Pacific, N.A."],
+  ["S", "2037-07-13", "02:40:35", "Total", "1.041", "03m58s", "Australia, New Zealand"],
+  ["L", "2037-07-27", "04:09:53", "Partial", "0.809", "03h12m", "Americas, Europe, Africa"],
+  ["S", "2038-01-05", "13:47:10", "Annular", "0.973", "03m18s", "Cuba, Dom.Rep., Cote d'Ivoire, Ghana, Niger, Chad, Egypt"],
+  ["L", "2038-01-21", "03:49:52", "Penumbral", "-0.114", "-", "Americas, Europe, Africa"],
+  ["L", "2038-06-17", "02:45:02", "Penumbral", "-0.527", "-", "e N. America, C. & S. America, Africa, w Europe"],
+  ["S", "2038-07-02", "13:32:54", "Annular", "0.991", "01m00s", "Colombia, Venezuela, Mauritania, Morocco, Mali, Niger, Chad, Sudan, Ethiopia, Kenya"],
+  ["L", "2038-07-16", "11:35:56", "Penumbral", "-0.495", "-", "Australia, e Asia, Pacific, w Americas"],
+  ["L", "2038-12-11", "17:45:00", "Penumbral", "-0.289", "-", "Europe, Africa, Asia, Australia"],
+  ["S", "2038-12-26", "01:00:10", "Total", "1.027", "02m18s", "Australia, New Zealand, s Pacific"],
+  ["L", "2039-06-06", "18:54:25", "Partial", "0.885", "02h59m", "Europe, Africa, Asia, Australia"],
+  ["S", "2039-06-21", "17:12:53", "Annular", "0.945", "04m05s", "Alaska, n Canada, Norway, Sweden, Finland, Estonia, Russia"],
+  ["L", "2039-11-30", "16:56:28", "Partial", "0.943", "03h26m", "Europe, Africa, Asia, Australia, Pacific"],
+  ["S", "2039-12-15", "16:23:46", "Total", "1.036", "01m51s", "Antarctica"],
+  ["S", "2040-05-11", "03:43:02", "Partial", "0.531", "-", "Australia, N.Z., Antarctica"],
+  ["L", "2040-05-26", "11:46:22", "Total", "1.535", "03h31m 01h32m", "e Asia, Australia, Pacific, w Americas"],
+  ["S", "2040-11-04", "19:09:01", "Partial", "0.807", "-", "N. & C. America"],
+  ["L", "2040-11-18", "19:04:41", "Total", "1.397", "03h40m 01h28m", "e Americas, Europe, Africa, Asia, Australia"]
+];
+const TD_MINUS_UT_S = 70; // about 70 s across these years
+
+const eclipseGreatest = e => new Date(Date.parse(e[1] + 'T' + e[2] + 'Z') - TD_MINUS_UT_S * 1000);
+function nextEclipses(from, count) {
+  return ECLIPSES.filter(e => eclipseGreatest(e) > from).slice(0, count);
+}
+// 'all', 'part' or 'none' of a lunar eclipse above the London horizon.
+function lunarEclipseFromLondon(e) {
+  const g = toJD(eclipseGreatest(e));
+  const m = e[5].match(/^(\d+)h(\d+)m/);
+  const half = m ? (+m[1] * 60 + +m[2]) / 2 / 1440 : 0;
+  const times = half ? [g - half, g, g + half] : [g];
+  const up = times.map(t => heightAboveHorizon('Moon', t) > 0);
+  return up.every(x => x) ? 'all' : (up.some(x => x) ? 'part' : 'none');
 }
 
 // ── Planets ──────────────────────────────────────────────────
@@ -1198,6 +1343,26 @@ window.addEventListener('load', () => {
         .sort((a, b) => a.getAttribute('data-t') - b.getAttribute('data-t'))
         .forEach(el => el.parentNode.appendChild(el));
     }
+    const list = nextEclipses(now, 4);
+    const kindName = { Total: 'Total', Annular: 'Annular', Hybrid: 'Hybrid', Partial: 'Partial', Penumbral: 'Penumbral' };
+    document.getElementById('eclipse-rows').innerHTML = list.length ? list.map(e => {
+      const when = eclipseGreatest(e), solar = e[0] === 'S';
+      let sub = 'in ' + fmtAway(when, now), lon;
+      if (solar) {
+        if (e[3] === 'Total' || e[3] === 'Annular' || e[3] === 'Hybrid') sub += ' · ' + e[3].toLowerCase() + ' for up to ' + e[5].replace('m', ' min ').replace('s', ' s') + ' along ' + e[6];
+        else sub += ' · seen from ' + e[6];
+        const l = londonSolarEclipse(when);
+        lon = l ? 'From London: ' + Math.round(l.cover * 100) + '% of the Sun covered, at its most ' + fmtClock(l.when) + (l.sunAlt < 5 ? ', with the Sun low in the sky' : '') : 'From London: not visible';
+      } else {
+        sub += ' · seen from ' + e[6];
+        const v = lunarEclipseFromLondon(e);
+        lon = v === 'all' ? 'From London: visible' : (v === 'part' ? 'From London: partly visible, the Moon rises or sets during it' : 'From London: not visible, the Moon is below the horizon');
+        if (e[3] === 'Penumbral' && v !== 'none') lon += ' (a faint shading only)';
+      }
+      return '<div class="event"><span class="moon-dot ecl ' + (solar ? 'solar' : 'lunar') + '"></span><div class="event-text">' +
+        '<div class="event-name">' + fmtWhen(when) + ' · ' + kindName[e[3]].toUpperCase() + (solar ? ' SOLAR' : ' LUNAR') + ' ECLIPSE</div>' +
+        '<div class="event-days">' + sub + '</div><div class="event-lon">' + lon + '</div></div></div>';
+    }).join('') : '<div class="event-days">The eclipse table runs to 2040 and needs extending.</div>';
     const km = moonDistance(jd), width = 2 * Math.asin(1737.4 / km) * 180 / Math.PI * 60;
     setText('d-size', width.toFixed(1) + '′ (' + (width / 60).toFixed(2) + '°)');
     const peri = nextDistanceExtreme(now, true), apo = nextDistanceExtreme(now, false);
