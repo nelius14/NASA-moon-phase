@@ -87,7 +87,6 @@
       height: 100%;
       object-fit: none;
       object-position: center;
-      transform: scale(2)
       display: block;
     }
 
@@ -153,9 +152,9 @@
     }
     .phase-label {
       font-family: 'Inconsolata', monospace;
-      font-size: 0.6rem;
+      font-size: 0.75rem;
       letter-spacing: 0.18em;
-      color: rgba(180,172,155,0.4);
+      color: rgba(180,172,155,0.72);
       text-transform: uppercase;
     }
     .phase-name {
@@ -188,7 +187,7 @@
       font-family: 'Inconsolata', monospace;
       font-size: 0.57rem;
       letter-spacing: 0.14em;
-      color: rgba(180,172,155,0.38);
+      color: rgba(180,172,155,0.72);
       text-transform: uppercase;
     }
 
@@ -204,7 +203,7 @@
       font-family: 'Inconsolata', monospace;
       font-size: 0.6rem;
       letter-spacing: 0.18em;
-      color: rgba(180,172,155,0.4);
+      color: rgba(180,172,155,0.72);
       text-transform: uppercase;
       margin-bottom: 0.5rem;
     }
@@ -213,22 +212,29 @@
       flex-direction: column;
       gap: 0.7rem;
     }
+    @media (orientation: portrait) { .events { align-items: center; } }
     .event {
       display: flex;
       align-items: center;
       gap: 0.85rem;
     }
-    .event-icon { font-size: 1rem; line-height: 1; width: 1.2rem; text-align: center; }
+    .moon-dot {
+      flex-shrink: 0;
+      width: 1rem; height: 1rem;
+      border-radius: 50%;
+      border: 1px solid rgba(228,218,188,0.8);
+    }
+    .moon-dot.full { background: rgba(228,218,188,0.9); }
     .event-text { display: flex; flex-direction: column; gap: 0.05rem; }
-    .event-name { font-family: 'Inconsolata', monospace; font-size: 0.68rem; letter-spacing: 0.06em; color: rgba(200,193,172,0.7); }
-    .event-days { font-family: 'Inconsolata', monospace; font-size: 0.58rem; letter-spacing: 0.1em; color: rgba(180,172,155,0.38); text-transform: uppercase; }
+    .event-name { font-family: 'Inconsolata', monospace; font-size: 0.85rem; letter-spacing: 0.06em; color: rgba(210,202,180,0.88); }
+    .event-days { font-family: 'Inconsolata', monospace; font-size: 0.68rem; letter-spacing: 0.1em; color: rgba(180,172,155,0.72); text-transform: uppercase; }
 
     /* credit */
     .credit {
       font-family: 'Inconsolata', monospace;
-      font-size: 0.48rem;
+      font-size: 0.6rem;
       letter-spacing: 0.09em;
-      color: rgba(180,172,155,0.18);
+      color: rgba(180,172,155,0.7);
       margin-top: 0.5rem;
     }
   </style>
@@ -259,6 +265,23 @@
     <div class="phase-block">
       <div class="phase-label">Illuminated</div>
       <div class="phase-name" id="illum">—</div>
+    </div>
+
+    <div class="events" id="events">
+      <div class="event">
+        <span class="moon-dot full"></span>
+        <div class="event-text">
+          <div class="event-name" id="next-full-when">—</div>
+          <div class="event-days" id="next-full-in">Next full moon</div>
+        </div>
+      </div>
+      <div class="event">
+        <span class="moon-dot new"></span>
+        <div class="event-text">
+          <div class="event-name" id="next-new-when">—</div>
+          <div class="event-days" id="next-new-in">Next new moon</div>
+        </div>
+      </div>
     </div>
 
     <div class="credit">NASA SVS · Lunar Reconnaissance Orbiter · Public domain</div>
@@ -333,29 +356,60 @@ function phaseName(p) {
   return 'Waning Crescent';
 }
 
-// ── NASA SVS frame lookup ────────────────────────────────────
-// SVS-5187: 8784 frames, one per UTC hour of 2024 (leap year).
-// Frame 1 = Jan 1, 2024 00:00 UTC. Public domain.
-// We pick the 2024 hour whose true elongation is closest to now, so the
-// photo shows the same real phase as the text.
-const JD_JAN1_2024   = 2460310.5;
-const FRAMES_IN_2024 = 8784;
-const BASE = 'https://svs.gsfc.nasa.gov/vis/a000000/a005100/a005187/frames/730x730_1x1_30p/';
-
-const FRAME_ELONG = new Float32Array(FRAMES_IN_2024);
-for (let i = 0; i < FRAMES_IN_2024; i++) {
-  FRAME_ELONG[i] = elongation(JD_JAN1_2024 + i / 24);
+// Next time the elongation reaches `target` degrees (0 = new moon, 180 = full moon).
+// Steps forward 3 hours until the angle passes the target, then bisects to the minute.
+function nextPhaseEvent(from, target) {
+  const rel = jd => ((elongation(jd) - target) % 360 + 360) % 360; // 0 at the event
+  const STEP = 3 / 24;
+  const start = toJD(from);
+  let prev = rel(start);
+  for (let t = start + STEP; t < start + 40; t += STEP) {
+    const cur = rel(t);
+    if (cur < prev) { // wrapped past 0, so the event is in (t - STEP, t]
+      let lo = t - STEP, hi = t;
+      while (hi - lo > 0.5 / 1440) {
+        const mid = (lo + hi) / 2;
+        if (rel(mid) > 180) lo = mid; else hi = mid;
+      }
+      return new Date((hi - 2440587.5) * 86400000);
+    }
+    prev = cur;
+  }
+  return null;
 }
 
-function frameUrl(phase) {
-  const target = phase * 360;
+// ── NASA SVS frame lookup ────────────────────────────────────
+// SVS-5587: 8760 frames, one per UTC hour of 2026. Frame 1 = Jan 1, 2026 00:00 UTC.
+// Public domain. During 2026 we show the exact hour, with the real libration and
+// distance. Outside 2026 we show the 2026 hour whose true phase matches best.
+const FRAME_YEAR     = 2026;
+const JD_JAN1        = 2461041.5; // 2026-01-01 00:00 UTC
+const FRAMES_IN_YEAR = 8760;
+const BASE = 'https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587/frames/730x730_1x1_30p/';
+
+let frameElong = null; // elongation of every frame, built only when needed
+
+function frameNumber(date) {
+  const hours = (toJD(date) - JD_JAN1) * 24;
+  if (date.getUTCFullYear() === FRAME_YEAR) {
+    return Math.min(FRAMES_IN_YEAR, Math.max(1, Math.round(hours) + 1));
+  }
+  if (!frameElong) {
+    frameElong = new Float32Array(FRAMES_IN_YEAR);
+    for (let i = 0; i < FRAMES_IN_YEAR; i++) frameElong[i] = elongation(JD_JAN1 + i / 24);
+  }
+  const target = elongation(toJD(date));
   let best = 0, bestDiff = 360;
-  for (let i = 0; i < FRAMES_IN_2024; i++) {
-    let d = Math.abs(FRAME_ELONG[i] - target);
+  for (let i = 0; i < FRAMES_IN_YEAR; i++) {
+    let d = Math.abs(frameElong[i] - target);
     if (d > 180) d = 360 - d;
     if (d < bestDiff) { bestDiff = d; best = i; }
   }
-  return BASE + 'moon.' + String(best + 1).padStart(4, '0') + '.jpg';
+  return best + 1;
+}
+
+function frameUrl(date) {
+  return BASE + 'moon.' + String(frameNumber(date)).padStart(4, '0') + '.jpg';
 }
 
 // ── Clock ────────────────────────────────────────────────────
@@ -373,15 +427,34 @@ function tick() {
 // ── Boot ─────────────────────────────────────────────────────
 window.addEventListener('load', () => {
   tick();
-  setInterval(() => { tick(); fitTime(); }, 60000);
+  setInterval(() => { tick(); renderMoon(false); }, 60000); // always-on display: keep photo, text and events current
 
   const img    = document.getElementById('moon-img');
   const status = document.getElementById('moon-status');
 
+  const WHEN = { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' };
+  function renderEvent(kind, target, label, now) {
+    const when = nextPhaseEvent(now, target);
+    if (!when) return;
+    const hours = (when - now) / 3600000;
+    const away = hours < 24 ? Math.max(1, Math.round(hours)) + ' h' : Math.round(hours / 24) + ' days';
+    document.getElementById('next-' + kind + '-when').textContent =
+      when.toLocaleString('en-GB', WHEN).replace(',', '').toUpperCase();
+    document.getElementById('next-' + kind + '-in').textContent = label + ' · in ' + away;
+  }
+
+  let shownUrl = '';
   function renderMoon(bustCache) {
-    const { phase, illum } = moonData(new Date());
-    const url = frameUrl(phase);
-    img.src = bustCache ? url + '?t=' + Date.now() : url;
+    const now = new Date();
+    const { phase, illum } = moonData(now);
+    const url = frameUrl(now);
+    // Only touch the image when the frame changed (or on wake), so the photo never flickers.
+    if (url !== shownUrl || bustCache) {
+      shownUrl = url;
+      img.src = bustCache ? url + '?t=' + Date.now() : url;
+    }
+    renderEvent('full', 180, 'Next full moon', now);
+    renderEvent('new', 0, 'Next new moon', now);
     document.getElementById('phase-name').textContent = phaseName(phase);
     document.getElementById('illum').textContent      = Math.round(illum * 100) + '%';
     fitTime();
