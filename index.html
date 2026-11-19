@@ -333,28 +333,37 @@ function phaseName(p) {
 }
 
 // ── NASA SVS frame lookup ────────────────────────────────────
-// SVS-5187: 8784 frames, one per UTC hour of 2024 (leap year).
-// Frame 1 = Jan 1, 2024 00:00 UTC. Public domain.
-// We pick the 2024 hour whose true elongation is closest to now, so the
-// photo shows the same real phase as the text.
-const JD_JAN1_2024   = 2460310.5;
-const FRAMES_IN_2024 = 8784;
-const BASE = 'https://svs.gsfc.nasa.gov/vis/a000000/a005100/a005187/frames/730x730_1x1_30p/';
+// SVS-5587: 8760 frames, one per UTC hour of 2026. Frame 1 = Jan 1, 2026 00:00 UTC.
+// Public domain. During 2026 we show the exact hour, with the real libration and
+// distance. Outside 2026 we show the 2026 hour whose true phase matches best.
+const FRAME_YEAR     = 2026;
+const JD_JAN1        = 2461041.5; // 2026-01-01 00:00 UTC
+const FRAMES_IN_YEAR = 8760;
+const BASE = 'https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005587/frames/730x730_1x1_30p/';
 
-const FRAME_ELONG = new Float32Array(FRAMES_IN_2024);
-for (let i = 0; i < FRAMES_IN_2024; i++) {
-  FRAME_ELONG[i] = elongation(JD_JAN1_2024 + i / 24);
-}
+let frameElong = null; // elongation of every frame, built only when needed
 
-function frameUrl(phase) {
-  const target = phase * 360;
+function frameNumber(date) {
+  const hours = (toJD(date) - JD_JAN1) * 24;
+  if (date.getUTCFullYear() === FRAME_YEAR) {
+    return Math.min(FRAMES_IN_YEAR, Math.max(1, Math.round(hours) + 1));
+  }
+  if (!frameElong) {
+    frameElong = new Float32Array(FRAMES_IN_YEAR);
+    for (let i = 0; i < FRAMES_IN_YEAR; i++) frameElong[i] = elongation(JD_JAN1 + i / 24);
+  }
+  const target = elongation(toJD(date));
   let best = 0, bestDiff = 360;
-  for (let i = 0; i < FRAMES_IN_2024; i++) {
-    let d = Math.abs(FRAME_ELONG[i] - target);
+  for (let i = 0; i < FRAMES_IN_YEAR; i++) {
+    let d = Math.abs(frameElong[i] - target);
     if (d > 180) d = 360 - d;
     if (d < bestDiff) { bestDiff = d; best = i; }
   }
-  return BASE + 'moon.' + String(best + 1).padStart(4, '0') + '.jpg';
+  return best + 1;
+}
+
+function frameUrl(date) {
+  return BASE + 'moon.' + String(frameNumber(date)).padStart(4, '0') + '.jpg';
 }
 
 // ── Clock ────────────────────────────────────────────────────
@@ -378,8 +387,9 @@ window.addEventListener('load', () => {
   const status = document.getElementById('moon-status');
 
   function renderMoon(bustCache) {
-    const { phase, illum } = moonData(new Date());
-    const url = frameUrl(phase);
+    const now = new Date();
+    const { phase, illum } = moonData(now);
+    const url = frameUrl(now);
     img.src = bustCache ? url + '?t=' + Date.now() : url;
     document.getElementById('phase-name').textContent = phaseName(phase);
     document.getElementById('illum').textContent      = Math.round(illum * 100) + '%';

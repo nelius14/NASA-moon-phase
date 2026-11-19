@@ -32,10 +32,23 @@ assert.strictEqual(phaseName(moonData(new Date('2026-11-24T14:53:00Z')).phase), 
 assert.strictEqual(phaseName(moonData(new Date('2026-11-09T07:02:00Z')).phase), 'New Moon');
 console.log('ok   phase names');
 
-// frame lookup returns a valid 2024 frame whose own phase is close to the request
-const frame = frameUrl(0.5);
-const n = Number(frame.match(/moon\.(\d{4})\.jpg$/)[1]);
-assert(n >= 1 && n <= 8784, 'frame out of range');
-const frameElong = elongation(2460310.5 + (n - 1) / 24);
-assert(Math.abs(frameElong - 180) < 0.5, `frame ${n} elongation ${frameElong}`);
-console.log('ok   frame lookup (frame', n + ')');
+// frame lookup
+vm.runInContext(';this.frames={frameNumber,JD_JAN1}', ctx);
+const { frameNumber, JD_JAN1 } = ctx.frames;
+
+// inside 2026: exact UTC hour, frame 1 = Jan 1 00:00
+assert.strictEqual(frameNumber(new Date('2026-01-01T00:10:00Z')), 1);
+assert.strictEqual(frameNumber(new Date('2026-01-03T10:00:00Z')), 59);
+assert.strictEqual(frameNumber(new Date('2026-12-31T23:30:00Z')), 8760);
+assert(/moon\.0059\.jpg$/.test(frameUrl(new Date('2026-01-03T10:00:00Z'))));
+console.log('ok   2026 frame numbers');
+
+// outside 2026: nearest-phase frame, within half an hour of phase
+for (const iso of ['2027-03-14T12:00:00Z', '2025-07-01T03:00:00Z']) {
+  const d = new Date(iso);
+  const n = frameNumber(d);
+  assert(n >= 1 && n <= 8760, 'frame out of range');
+  const diff = Math.abs(((elongation(JD_JAN1 + (n - 1) / 24) - elongation(toJD(d)) + 540) % 360) - 180);
+  assert(diff < 0.5, `${iso}: frame ${n} off by ${diff.toFixed(2)} deg`);
+}
+console.log('ok   fallback frame matching');
