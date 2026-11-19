@@ -268,16 +268,58 @@
 
 <script>
 // ── Lunar maths ──────────────────────────────────────────────
-const CYCLE = 29.530588853;
-const EPOCH = 2451550.1; // Jan 6, 2000 18:14 UTC (known new moon)
+// Elongation (Moon minus Sun ecliptic longitude) from Meeus,
+// "Astronomical Algorithms" ch. 47 (truncated series) and ch. 25 (low-precision Sun).
+// Accurate to roughly 0.3 degrees, i.e. well under an hour of phase.
+const CYCLE = 29.530588853; // mean synodic month, only used to express age in days
 
 function toJD(d) { return d / 86400000 + 2440587.5; }
 
+const RAD = Math.PI / 180;
+const norm360 = x => ((x % 360) + 360) % 360;
+
+// [D, M, M', F, coefficient in 1e-6 degrees]
+const MOON_LON_TERMS = [
+  [0,0,1,0,6288774],[2,0,-1,0,1274027],[2,0,0,0,658314],[0,0,2,0,213618],
+  [0,1,0,0,-185116],[0,0,0,2,-114332],[2,0,-2,0,58793],[2,-1,-1,0,57066],
+  [2,0,1,0,53322],[2,-1,0,0,45758],[0,1,-1,0,-40923],[1,0,0,0,-34720],
+  [0,1,1,0,-30383],[2,0,0,-2,15327],[0,0,1,2,-12528],[0,0,1,-2,10980],
+  [4,0,-1,0,10675],[0,0,3,0,10034],[4,0,-2,0,8548],[2,1,-1,0,-7888],
+  [2,1,0,0,-6766],[1,0,-1,0,-5163],[1,1,0,0,4987],[2,-1,1,0,4036],
+  [2,0,2,0,3994],[4,0,0,0,3861],[2,0,-3,0,3665],[0,1,-2,0,-2689],
+  [2,0,-1,2,-2602],[2,-1,-2,0,2390],[1,0,1,0,-2348],[2,-2,0,0,2236],
+  [0,1,2,0,-2120],[0,2,0,0,-2069],[2,-2,-1,0,2048]
+];
+
+function elongation(jd) {
+  const T = (jd - 2451545.0) / 36525;
+  const Lm = norm360(218.3164477 + 481267.88123421 * T);
+  const D  = norm360(297.8501921 + 445267.1114034 * T);
+  const M  = norm360(357.5291092 + 35999.0502909 * T);
+  const Mp = norm360(134.9633964 + 477198.8675055 * T);
+  const F  = norm360(93.2720950 + 483202.0175233 * T);
+  const E  = 1 - 0.002516 * T - 0.0000074 * T * T;
+  let sum = 0;
+  for (const [d, m, mp, f, c] of MOON_LON_TERMS) {
+    const e = m === 0 ? 1 : (Math.abs(m) === 1 ? E : E * E);
+    sum += c * e * Math.sin((d * D + m * M + mp * Mp + f * F) * RAD);
+  }
+  const A1 = 119.75 + 131.849 * T, A2 = 53.09 + 479264.290 * T;
+  sum += 3958 * Math.sin(A1 * RAD) + 1962 * Math.sin((Lm - F) * RAD) + 318 * Math.sin(A2 * RAD);
+  const moonLon = Lm + sum / 1e6;
+
+  const L0 = 280.46646 + 36000.76983 * T;
+  const Ms = (357.52911 + 35999.05029 * T) * RAD;
+  const C  = (1.914602 - 0.004817 * T) * Math.sin(Ms)
+           + 0.019993 * Math.sin(2 * Ms) + 0.000289 * Math.sin(3 * Ms);
+  return norm360(moonLon - (L0 + C));
+}
+
 function moonData(date) {
-  const age   = ((toJD(date) - EPOCH) % CYCLE + CYCLE) % CYCLE;
-  const phase = age / CYCLE;
-  const illum = (1 - Math.cos(phase * 2 * Math.PI)) / 2;
-  return { phase, age, illum };
+  const elong = elongation(toJD(date));
+  const phase = elong / 360;
+  const illum = (1 - Math.cos(elong * RAD)) / 2;
+  return { phase, age: phase * CYCLE, illum };
 }
 
 function phaseName(p) {
@@ -300,18 +342,26 @@ function daysTo(age, frac) {
 // ── NASA SVS frame lookup ────────────────────────────────────
 // SVS-5187: 8784 frames, one per UTC hour of 2024 (leap year).
 // Frame 1 = Jan 1, 2024 00:00 UTC. Public domain.
+// We pick the 2024 hour whose true elongation is closest to now, so the
+// photo shows the same real phase as the text.
 const JD_JAN1_2024   = 2460310.5;
 const FRAMES_IN_2024 = 8784;
 const BASE = 'https://svs.gsfc.nasa.gov/vis/a000000/a005100/a005187/frames/730x730_1x1_30p/';
-const AGE_AT_FRAME1  = ((JD_JAN1_2024 - EPOCH) % CYCLE + CYCLE) % CYCLE;
+
+const FRAME_ELONG = new Float32Array(FRAMES_IN_2024);
+for (let i = 0; i < FRAMES_IN_2024; i++) {
+  FRAME_ELONG[i] = elongation(JD_JAN1_2024 + i / 24);
+}
 
 function frameUrl(phase) {
-  let offset = phase * CYCLE - AGE_AT_FRAME1;
-  if (offset < 0) offset += CYCLE;
-  let frame = Math.round(offset * 24) + 1;
-  if (frame < 1)              frame += FRAMES_IN_2024;
-  if (frame > FRAMES_IN_2024) frame = ((frame - 1) % FRAMES_IN_2024) + 1;
-  return BASE + 'moon.' + String(frame).padStart(4, '0') + '.jpg';
+  const target = phase * 360;
+  let best = 0, bestDiff = 360;
+  for (let i = 0; i < FRAMES_IN_2024; i++) {
+    let d = Math.abs(FRAME_ELONG[i] - target);
+    if (d > 180) d = 360 - d;
+    if (d < bestDiff) { bestDiff = d; best = i; }
+  }
+  return BASE + 'moon.' + String(best + 1).padStart(4, '0') + '.jpg';
 }
 
 // ── Clock ────────────────────────────────────────────────────

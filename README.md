@@ -17,8 +17,8 @@ python3 -m http.server 8080
 then open `http://localhost:8080/index.html`.
 
 ## How it works
-- Phase is computed from the mean synodic month (29.5306 days) against a known new moon (2000-01-06). This can be off by several hours from the true phase.
-- The NASA frames only cover 2024, so today's phase is mapped onto the 2024 frame with the same mean-model phase. The photo can therefore differ slightly from the true current Moon (up to about half a day of phase, plus libration).
+- Phase is the Moon-minus-Sun ecliptic longitude (Meeus, *Astronomical Algorithms*, truncated series). It matched published new/full moon times to under 0.1 hour in spot checks (2024-04-08, 2024-04-23, 2026-11-09, 2026-11-24).
+- The NASA frames only cover 2024, so the page computes the true elongation of each of the 8784 hourly 2024 frames and shows the one closest to now. The photo shows the same real phase as the text. Libration and distance still differ from today's Moon.
 - On wake from sleep the clock, photo and phase text refresh.
 
 ## Credits
