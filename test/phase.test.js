@@ -6,11 +6,11 @@ const vm = require('vm');
 const assert = require('assert');
 
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-const script = html.match(/<script>([\s\S]*?)<\/script>/)[1].split('// ── Clock')[0];
+const script = html.match(/<script>([\s\S]*?)<\/script>/)[1].split('// ── UI')[0];
 const ctx = {};
 vm.createContext(ctx);
-vm.runInContext(script + ';this.api={elongation,toJD,moonData,phaseName,frameUrl,nextPhaseEvent,moonDistance,nextDistanceExtreme,lunation}', ctx);
-const { elongation, toJD, moonData, phaseName, frameUrl, nextPhaseEvent, moonDistance, nextDistanceExtreme, lunation } = ctx.api;
+vm.runInContext(script + ';this.api={elongation,toJD,moonData,phaseName,frameUrl,nextPhaseEvent,moonDistance,nextDistanceExtreme,lunation,distanceExtremes,planetPosition,planetSky,skyKind,PLANETS}', ctx);
+const { elongation, toJD, moonData, phaseName, frameUrl, nextPhaseEvent, moonDistance, nextDistanceExtreme, lunation, distanceExtremes, planetPosition, planetSky, skyKind, PLANETS } = ctx.api;
 
 // [label, UTC time, expected elongation in degrees]
 const events = [
@@ -82,3 +82,29 @@ assert(ln.start <= new Date('2026-11-19T18:00:00Z') && ln.end > new Date('2026-1
 const lenDays = (ln.end - ln.start) / 86400000;
 assert(lenDays > 29.2 && lenDays < 29.9, `lunation ${lenDays}`);
 console.log('ok   lunation', ln.start.toISOString(), '->', ln.end.toISOString());
+
+// Planets. Reference values are NASA/JPL Horizons (DE441), heliocentric ecliptic, 2026-11-19 19:00 UT.
+const HORIZONS = {"Mercury": {"x": -0.2302, "y": 0.2373, "z": 0.0405, "e": -19.556, "delta": 0.97}, "Venus": {"x": 0.2094, "y": 0.6897, "z": -0.0026, "e": -33.951, "delta": 0.3562}, "Earth": {"x": 0.537, "y": 0.8296, "z": -0.0001}, "Mars": {"x": -0.5323, "y": 1.5225, "z": 0.045, "e": -90.028, "delta": 1.2748}, "Jupiter": {"x": -3.7693, "y": 3.7577, "z": 0.0687, "e": -91.298, "delta": 5.2078}, "Saturn": {"x": 9.1876, "y": 2.038, "z": -0.4012, "e": 130.819, "delta": 8.7439}, "Uranus": {"x": 8.7546, "y": 17.3484, "z": -0.0491, "e": -173.526, "delta": 18.45}, "Neptune": {"x": 29.8286, "y": 1.5371, "z": -0.719, "e": 124.291, "delta": 29.3091}, "Pluto": {"x": 20.0975, "y": -29.317, "z": -2.6756, "e": 65.962, "delta": 36.0359}};
+const jdPl = toJD(Date.UTC(2026, 10, 19, 19, 0));
+for (const n of PLANETS) {
+  const p = planetPosition(n, jdPl), h = HORIZONS[n];
+  const err = Math.hypot(p[0] - h.x, p[1] - h.y, p[2] - h.z);
+  assert(err < 0.02, `${n} position off by ${err.toFixed(4)} AU`);
+  if (n !== 'Earth') {
+    const s = planetSky(n, jdPl);
+    assert(Math.abs(s.e - h.e) < 0.3, `${n} elongation ${s.e.toFixed(2)} vs ${h.e}`);
+    assert(Math.abs(s.delta - h.delta) < 0.02, `${n} distance from Earth ${s.delta} vs ${h.delta}`);
+  }
+}
+console.log('ok   planet positions and elongations match Horizons');
+assert.strictEqual(skyKind('Venus', -34).kind, 'dawn');
+assert.strictEqual(skyKind('Saturn', 131).kind, 'dusk');
+assert.strictEqual(skyKind('Mercury', -20).kind, 'glare');
+assert.strictEqual(skyKind('Uranus', -174).kind, 'night');
+assert.strictEqual(skyKind('Pluto', 66).kind, 'tele');
+console.log('ok   sky pills');
+
+// distance extremes in a window: one closest and one farthest inside four weeks
+const ext = distanceExtremes(jdPl - 14.5, jdPl + 14.5);
+assert(ext.some(e => e.closest) && ext.some(e => !e.closest), 'window should hold a perigee and an apogee');
+console.log('ok   distance extremes', ext.map(e => (e.closest ? 'perigee ' : 'apogee ') + e.date.toISOString().slice(0, 10)).join(', '));

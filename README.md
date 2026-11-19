@@ -1,25 +1,41 @@
 # NASA-moon-phase
 
-A single-page display of the current moon phase using real NASA photography, built for an always-on tablet or new-tab page.
+An always-on display for an old iPad (Safari 12): the Moon today, and the solar system around it. Everything is calculated in the page. There is no server and no data feed.
 
-## What it shows
-- Current phase name and illuminated percentage
-- Local date and time
-- A photo of the Moon at the matching phase, from NASA SVS-5187 (hourly frames covering 2024)
+## What's on it
+1. **The Moon.** NASA's photo for the current hour, phase name, age in the cycle, a fading cycle line, a fading four-week distance curve, and the next full and new moon.
+2. **The solar system today.** All nine worlds in one tilted view, a ribbon of where each one sits relative to the Sun in our sky, and a row of morning/evening pills.
+3. **How big is it, really?** True-scale distance and size, so you can see what the other pages squeeze.
+4. **The Moon in detail.** Next quarters, closest and farthest points, apparent width.
+
+Swipe up to move between sections. After two quiet minutes it glides back to the top.
 
 ## Run
-No build step. Open `index.html` in a browser, or serve it:
+No build step. Open `index.html`, or serve the folder:
 
 ```bash
 python3 -m http.server 8080
 ```
 
-then open `http://localhost:8080/index.html`.
-
 ## How it works
-- Phase is the Moon-minus-Sun ecliptic longitude (Meeus, *Astronomical Algorithms*, truncated series). It matched published new/full moon times to under 0.1 hour in spot checks (2024-04-08, 2024-04-23, 2026-11-09, 2026-11-24).
-- The NASA frames only cover 2024, so the page computes the true elongation of each of the 8784 hourly 2024 frames and shows the one closest to now. The photo shows the same real phase as the text. Libration and distance still differ from today's Moon.
-- On wake from sleep the clock, photo and phase text refresh.
+- **Moon and Sun:** ecliptic longitudes from Meeus, *Astronomical Algorithms* (truncated series). Phases match published new and full moon times to under 0.1 hour.
+- **Moon distance:** Meeus ch. 47. Within about 55 km of NASA/JPL Horizons.
+- **Planets and Pluto:** NASA/JPL "Approximate Positions of the Planets" (valid 1800 to 2050). Within 0.1° of Horizons.
+- **Moon photo:** NASA SVS Moon Phase and Libration 2026 (hourly frames). Outside 2026 the page shows the 2026 hour whose true phase matches best. When NASA publishes the next year's set, update the frame constants in `index.html` (`FRAME_YEAR`, `JD_JAN1`, `FRAMES_IN_YEAR`, `BASE`).
+- **Planet photos:** NASA missions via Wikimedia Commons, in `img/`.
+- **Refresh:** every minute; the planets every five.
 
-## Credits
-Moon imagery: NASA Scientific Visualization Studio, SVS-5187 (public domain). Fonts: Google Fonts.
+## Keeping the tablet up to date
+`version.json` holds a build id that is also written into `index.html`. The page checks it every 30 minutes and reloads itself when it changes. It also reloads at 04:00 to start fresh. After any change, run:
+
+```bash
+npm run stamp
+```
+
+## Checks
+```bash
+npm test
+npm run compat
+```
+
+`npm test` checks the maths against known new and full moons and against Horizons (distance, planet positions, elongations), and that the build id is current. `npm run compat` fails if the page uses CSS or JavaScript that iOS 12 Safari cannot handle (no flexbox `gap`, `clamp()`, `inset`, optional chaining and so on).
