@@ -33,10 +33,10 @@
     .layout {
       display: flex;
       align-items: center;
-      gap: 4rem;
       padding: 2rem;
       animation: rise 1.2s ease both;
     }
+    .layout > * + * { margin-left: 4rem; }
     @keyframes rise {
       from { opacity: 0; transform: translateY(16px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -46,14 +46,15 @@
     @media (orientation: portrait) {
       .layout {
         flex-direction: column;
-        gap: 2rem;
         justify-content: center;
       }
+      .layout > * + * { margin-left: 0; margin-top: 2rem; }
       .moon-ring {
         width: min(78vw, 480px) !important;
         height: min(78vw, 480px) !important;
       }
-      .info { align-items: center; text-align: center; gap: 1.2rem !important; }
+      .info { align-items: center; text-align: center; }
+      .info > * + * { margin-top: 1.2rem !important; }
       .time { font-size: 3.5rem !important; }
       .phase-name { font-size: 2rem !important; }
     }
@@ -65,8 +66,9 @@
         width: 450px !important;
         height: 450px !important;
       }
-      .layout { gap: 2rem; padding: 0.6rem 1rem; }
-      .info { gap: 1.6rem; }
+      .layout { padding: 0.6rem 1rem; }
+      .layout > * + * { margin-left: 2rem; }
+      .info > * + * { margin-top: 1.6rem; }
       .date { font-size: 0.85rem; letter-spacing: 0.14em; }
       .phase-label { font-size: 0.75rem; letter-spacing: 0.14em; }
       .phase-name { font-size: 3rem; }
@@ -92,13 +94,12 @@
 
     .moon-status {
       position: absolute;
-      inset: 0;
+      top: 0; right: 0; bottom: 0; left: 0;
       border-radius: 50%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
       background: rgba(8,8,8,0.8);
       font-family: 'Inconsolata', monospace;
       font-size: 0.62rem;
@@ -118,15 +119,15 @@
       min-width: 0;
       display: flex;
       flex-direction: column;
-      gap: 2rem;
     }
+    .info > * + * { margin-top: 2rem; }
 
     /* date + time */
     .dateline {
       display: flex;
       flex-direction: column;
-      gap: 0.3rem;
     }
+    .dateline > * + * { margin-top: 0.3rem; }
     .date {
       font-family: 'Inconsolata', monospace;
       font-size: 2.1rem;
@@ -136,7 +137,7 @@
     }
     .time {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(4rem, 9vw, 8rem);
+      font-size: 6rem; /* re-fitted in JS to match the phase name */
       font-weight: 300;
       color: rgba(228,218,188,1);
       letter-spacing: -0.01em;
@@ -148,8 +149,8 @@
     .phase-block {
       display: flex;
       flex-direction: column;
-      gap: 0.3rem;
     }
+    .phase-block > * + * { margin-top: 0.3rem; }
     .phase-label {
       font-family: 'Inconsolata', monospace;
       font-size: 0.75rem;
@@ -158,74 +159,36 @@
       text-transform: uppercase;
     }
     .phase-name {
-      font-size: clamp(2rem, 4.5vw, 4rem);
+      font-size: 3rem;
       font-weight: 300;
       font-style: italic;
       letter-spacing: 0.06em;
       line-height: 1.1;
       color: rgba(228,218,188,0.92);
     }
-
-    /* stats grid */
-    .stats {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .stat {
-      display: flex;
-      flex-direction: column;
-      gap: 0.18rem;
-    }
-    .stat-value {
-      font-family: 'Inconsolata', monospace;
-      font-size: 1.2rem;
-      color: rgba(228,218,188,0.88);
-      letter-spacing: 0.03em;
-    }
-    .stat-label {
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.57rem;
-      letter-spacing: 0.14em;
-      color: rgba(180,172,155,0.72);
-      text-transform: uppercase;
-    }
-
-    /* divider */
-    .divider {
-      width: 100%;
-      height: 1px;
-      background: rgba(228,218,188,0.08);
-    }
+    @media (min-width: 1100px) { .phase-name { font-size: 4rem; } }
 
     /* upcoming events */
-    .events-label {
-      font-family: 'Inconsolata', monospace;
-      font-size: 0.6rem;
-      letter-spacing: 0.18em;
-      color: rgba(180,172,155,0.72);
-      text-transform: uppercase;
-      margin-bottom: 0.5rem;
-    }
     .events {
       display: flex;
       flex-direction: column;
-      gap: 0.7rem;
     }
+    .events > * + * { margin-top: 0.7rem; }
     @media (orientation: portrait) { .events { align-items: center; } }
     .event {
       display: flex;
       align-items: center;
-      gap: 0.85rem;
     }
     .moon-dot {
       flex-shrink: 0;
       width: 1rem; height: 1rem;
+      margin-right: 0.85rem;
       border-radius: 50%;
       border: 1px solid rgba(228,218,188,0.8);
     }
     .moon-dot.full { background: rgba(228,218,188,0.9); }
-    .event-text { display: flex; flex-direction: column; gap: 0.05rem; }
+    .event-text { display: flex; flex-direction: column; }
+    .event-text > * + * { margin-top: 0.05rem; }
     .event-name { font-family: 'Inconsolata', monospace; font-size: 0.85rem; letter-spacing: 0.06em; color: rgba(210,202,180,0.88); }
     .event-days { font-family: 'Inconsolata', monospace; font-size: 0.68rem; letter-spacing: 0.1em; color: rgba(180,172,155,0.72); text-transform: uppercase; }
 
