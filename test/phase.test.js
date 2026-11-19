@@ -5,7 +5,7 @@ const path = require('path');
 const vm = require('vm');
 const assert = require('assert');
 
-const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const html = fs.readFileSync(process.env.INDEX_HTML || path.join(__dirname, '..', 'index.html'), 'utf8');
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1].split('// ── UI')[0];
 const ctx = {};
 vm.createContext(ctx);
@@ -32,24 +32,27 @@ assert.strictEqual(phaseName(moonData(new Date('2026-11-24T14:53:00Z')).phase), 
 assert.strictEqual(phaseName(moonData(new Date('2026-11-09T07:02:00Z')).phase), 'New Moon');
 console.log('ok   phase names');
 
-// frame lookup
-vm.runInContext(';this.frames={frameNumber,JD_JAN1}', ctx);
-const { frameNumber, JD_JAN1 } = ctx.frames;
+// frame lookup: driven by the constants in index.html, so a new year's frames need no test edits
+vm.runInContext(';this.frames={frameNumber,JD_JAN1,FRAME_YEAR,FRAMES_IN_YEAR,BASE}', ctx);
+const { frameNumber, JD_JAN1, FRAME_YEAR, FRAMES_IN_YEAR, BASE } = ctx.frames;
+const hoursInYear = (Date.UTC(FRAME_YEAR + 1, 0, 1) - Date.UTC(FRAME_YEAR, 0, 1)) / 3600000;
+assert.strictEqual(FRAMES_IN_YEAR, hoursInYear, 'frame count should be one per hour of the year');
+assert(Math.abs(JD_JAN1 - toJD(Date.UTC(FRAME_YEAR, 0, 1))) < 1e-9, 'JD_JAN1 should be 1 January 00:00 UTC');
 
-// inside 2026: exact UTC hour, frame 1 = Jan 1 00:00
-assert.strictEqual(frameNumber(new Date('2026-01-01T00:10:00Z')), 1);
-assert.strictEqual(frameNumber(new Date('2026-01-03T10:00:00Z')), 59);
-assert.strictEqual(frameNumber(new Date('2026-12-31T23:30:00Z')), 8760);
-assert(/moon\.0059\.jpg$/.test(frameUrl(new Date('2026-01-03T10:00:00Z'))));
-console.log('ok   2026 frame numbers');
+// inside the frame year: exact UTC hour, frame 1 = 1 January 00:00
+assert.strictEqual(frameNumber(new Date(Date.UTC(FRAME_YEAR, 0, 1, 0, 10))), 1);
+assert.strictEqual(frameNumber(new Date(Date.UTC(FRAME_YEAR, 0, 3, 10, 0))), 59);
+assert.strictEqual(frameNumber(new Date(Date.UTC(FRAME_YEAR, 11, 31, 23, 30))), FRAMES_IN_YEAR);
+assert(/moon\.0059\.jpg$/.test(frameUrl(new Date(Date.UTC(FRAME_YEAR, 0, 3, 10, 0)))));
+assert(BASE.startsWith('https://svs.gsfc.nasa.gov/vis/'));
+console.log('ok   frame numbers for', FRAME_YEAR);
 
-// outside 2026: nearest-phase frame, within half an hour of phase
-for (const iso of ['2027-03-14T12:00:00Z', '2025-07-01T03:00:00Z']) {
-  const d = new Date(iso);
+// outside the frame year: nearest-phase frame, within half a degree of phase
+for (const d of [new Date(Date.UTC(FRAME_YEAR + 1, 2, 14, 12)), new Date(Date.UTC(FRAME_YEAR - 1, 6, 1, 3))]) {
   const n = frameNumber(d);
-  assert(n >= 1 && n <= 8760, 'frame out of range');
+  assert(n >= 1 && n <= FRAMES_IN_YEAR, 'frame out of range');
   const diff = Math.abs(((elongation(JD_JAN1 + (n - 1) / 24) - elongation(toJD(d)) + 540) % 360) - 180);
-  assert(diff < 0.5, `${iso}: frame ${n} off by ${diff.toFixed(2)} deg`);
+  assert(diff < 0.5, `${d.toISOString()}: frame ${n} off by ${diff.toFixed(2)} deg`);
 }
 console.log('ok   fallback frame matching');
 
