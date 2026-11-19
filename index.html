@@ -331,25 +331,24 @@ window.addEventListener('load', () => {
   tick();
   setInterval(tick, 60000);
 
-  // Refresh moon photo when iPad wakes from sleep
+  const img    = document.getElementById('moon-img');
+  const status = document.getElementById('moon-status');
+
+  function renderMoon(bustCache) {
+    const { phase, illum } = moonData(new Date());
+    const url = frameUrl(phase);
+    img.src = bustCache ? url + '?t=' + Date.now() : url;
+    document.getElementById('phase-name').textContent = phaseName(phase);
+    document.getElementById('illum').textContent      = Math.round(illum * 100) + '%';
+  }
+
+  // Refresh clock, photo and phase text when iPad wakes from sleep
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       tick();
-      // Reload image in case phase has changed since last wake
-      const { phase: p2, age: a2, illum: i2 } = moonData(new Date());
-      img.src = frameUrl(p2) + '?t=' + Date.now();
+      renderMoon(true);
     }
   });
-
-  const now = new Date();
-  const { phase, age, illum } = moonData(now);
-
-  // Photo
-  const img    = document.getElementById('moon-img');
-  const status = document.getElementById('moon-status');
-  const ring   = document.getElementById('moon-ring');
-
-  img.src = frameUrl(phase);
 
   img.onload = () => {
     status.classList.add('hidden');
@@ -363,9 +362,7 @@ window.addEventListener('load', () => {
       'then open localhost:8080/moon-newtab.html';
   };
 
-  // Text
-  document.getElementById('phase-name').textContent = phaseName(phase);
-  document.getElementById('illum').textContent       = Math.round(illum * 100) + '%';
+  renderMoon(false);
 
   // Match time width to phase-name width using off-screen probe spans
   document.fonts.ready.then(() => {
