@@ -5,12 +5,12 @@ const path = require('path');
 const vm = require('vm');
 const assert = require('assert');
 
-const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const html = fs.readFileSync(process.env.INDEX_HTML || path.join(__dirname, '..', 'index.html'), 'utf8');
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1].split('// ── UI')[0];
 const ctx = {};
 vm.createContext(ctx);
-vm.runInContext(script + ';this.api={elongation,toJD,moonData,phaseName,frameUrl,nextPhaseEvent,moonDistance,nextDistanceExtreme,lunation,distanceExtremes,planetPosition,planetSky,skyKind,PLANETS}', ctx);
-const { elongation, toJD, moonData, phaseName, frameUrl, nextPhaseEvent, moonDistance, nextDistanceExtreme, lunation, distanceExtremes, planetPosition, planetSky, skyKind, PLANETS } = ctx.api;
+vm.runInContext(script + ';this.api={elongation,toJD,moonData,phaseName,frameUrl,nextPhaseEvent,moonDistance,nextDistanceExtreme,lunation,distanceExtremes,planetPosition,planetSky,skyKind,PLANETS,nextRiseSet,topocentricMoonSun,londonSolarEclipse,lunarEclipseFromLondon,nextEclipses,eclipseGreatest,ECLIPSES}', ctx);
+const { elongation, toJD, moonData, phaseName, frameUrl, nextPhaseEvent, moonDistance, nextDistanceExtreme, lunation, distanceExtremes, planetPosition, planetSky, skyKind, PLANETS, nextRiseSet, topocentricMoonSun, londonSolarEclipse, lunarEclipseFromLondon, nextEclipses, eclipseGreatest, ECLIPSES } = ctx.api;
 
 // [label, UTC time, expected elongation in degrees]
 const events = [
@@ -32,24 +32,27 @@ assert.strictEqual(phaseName(moonData(new Date('2026-11-24T14:53:00Z')).phase), 
 assert.strictEqual(phaseName(moonData(new Date('2026-11-09T07:02:00Z')).phase), 'New Moon');
 console.log('ok   phase names');
 
-// frame lookup
-vm.runInContext(';this.frames={frameNumber,JD_JAN1}', ctx);
-const { frameNumber, JD_JAN1 } = ctx.frames;
+// frame lookup: driven by the constants in index.html, so a new year's frames need no test edits
+vm.runInContext(';this.frames={frameNumber,JD_JAN1,FRAME_YEAR,FRAMES_IN_YEAR,BASE}', ctx);
+const { frameNumber, JD_JAN1, FRAME_YEAR, FRAMES_IN_YEAR, BASE } = ctx.frames;
+const hoursInYear = (Date.UTC(FRAME_YEAR + 1, 0, 1) - Date.UTC(FRAME_YEAR, 0, 1)) / 3600000;
+assert.strictEqual(FRAMES_IN_YEAR, hoursInYear, 'frame count should be one per hour of the year');
+assert(Math.abs(JD_JAN1 - toJD(Date.UTC(FRAME_YEAR, 0, 1))) < 1e-9, 'JD_JAN1 should be 1 January 00:00 UTC');
 
-// inside 2026: exact UTC hour, frame 1 = Jan 1 00:00
-assert.strictEqual(frameNumber(new Date('2026-01-01T00:10:00Z')), 1);
-assert.strictEqual(frameNumber(new Date('2026-01-03T10:00:00Z')), 59);
-assert.strictEqual(frameNumber(new Date('2026-12-31T23:30:00Z')), 8760);
-assert(/moon\.0059\.jpg$/.test(frameUrl(new Date('2026-01-03T10:00:00Z'))));
-console.log('ok   2026 frame numbers');
+// inside the frame year: exact UTC hour, frame 1 = 1 January 00:00
+assert.strictEqual(frameNumber(new Date(Date.UTC(FRAME_YEAR, 0, 1, 0, 10))), 1);
+assert.strictEqual(frameNumber(new Date(Date.UTC(FRAME_YEAR, 0, 3, 10, 0))), 59);
+assert.strictEqual(frameNumber(new Date(Date.UTC(FRAME_YEAR, 11, 31, 23, 30))), FRAMES_IN_YEAR);
+assert(/moon\.0059\.jpg$/.test(frameUrl(new Date(Date.UTC(FRAME_YEAR, 0, 3, 10, 0)))));
+assert(BASE.startsWith('https://svs.gsfc.nasa.gov/vis/'));
+console.log('ok   frame numbers for', FRAME_YEAR);
 
-// outside 2026: nearest-phase frame, within half an hour of phase
-for (const iso of ['2027-03-14T12:00:00Z', '2025-07-01T03:00:00Z']) {
-  const d = new Date(iso);
+// outside the frame year: nearest-phase frame, within half a degree of phase
+for (const d of [new Date(Date.UTC(FRAME_YEAR + 1, 2, 14, 12)), new Date(Date.UTC(FRAME_YEAR - 1, 6, 1, 3))]) {
   const n = frameNumber(d);
-  assert(n >= 1 && n <= 8760, 'frame out of range');
+  assert(n >= 1 && n <= FRAMES_IN_YEAR, 'frame out of range');
   const diff = Math.abs(((elongation(JD_JAN1 + (n - 1) / 24) - elongation(toJD(d)) + 540) % 360) - 180);
-  assert(diff < 0.5, `${iso}: frame ${n} off by ${diff.toFixed(2)} deg`);
+  assert(diff < 0.5, `${d.toISOString()}: frame ${n} off by ${diff.toFixed(2)} deg`);
 }
 console.log('ok   fallback frame matching');
 
@@ -108,3 +111,39 @@ console.log('ok   sky pills');
 const ext = distanceExtremes(jdPl - 14.5, jdPl + 14.5);
 assert(ext.some(e => e.closest) && ext.some(e => !e.closest), 'window should hold a perigee and an apogee');
 console.log('ok   distance extremes', ext.map(e => (e.closest ? 'perigee ' : 'apogee ') + e.date.toISOString().slice(0, 10)).join(', '));
+
+// Rise and set over London (51.51 N, 0.13 W). Reference times are NASA/JPL Horizons, UT.
+const RTS = {"2026-11-19T12:00:00Z": {"Sun": [["2026-11-19T16:08:00Z", "s"], ["2026-11-20T07:26:00Z", "r"], ["2026-11-20T16:06:00Z", "s"]], "Moon": [["2026-11-19T13:38:00Z", "r"], ["2026-11-20T02:01:00Z", "s"], ["2026-11-20T13:50:00Z", "r"]], "Mercury": [["2026-11-19T15:35:00Z", "s"], ["2026-11-20T05:29:00Z", "r"], ["2026-11-20T15:33:00Z", "s"]], "Venus": [["2026-11-19T14:49:00Z", "s"], ["2026-11-20T04:15:00Z", "r"], ["2026-11-20T14:46:00Z", "s"]], "Mars": [["2026-11-19T13:27:00Z", "s"], ["2026-11-19T22:47:00Z", "r"], ["2026-11-20T13:24:00Z", "s"]], "Jupiter": [["2026-11-19T13:17:00Z", "s"], ["2026-11-19T22:45:00Z", "r"], ["2026-11-20T13:13:00Z", "s"]], "Saturn": [["2026-11-19T14:32:00Z", "r"], ["2026-11-20T02:48:00Z", "s"], ["2026-11-20T14:28:00Z", "r"]], "Uranus": [["2026-11-19T16:14:00Z", "r"], ["2026-11-20T08:11:00Z", "s"], ["2026-11-20T16:10:00Z", "r"]], "Neptune": [["2026-11-19T14:14:00Z", "r"], ["2026-11-20T02:15:00Z", "s"], ["2026-11-20T14:10:00Z", "r"]], "Pluto": [["2026-11-19T12:41:00Z", "r"], ["2026-11-19T20:25:00Z", "s"], ["2026-11-20T12:37:00Z", "r"]]}, "2026-06-21T12:00:00Z": {"Sun": [["2026-06-21T20:23:00Z", "s"], ["2026-06-22T03:43:00Z", "r"]], "Moon": [["2026-06-21T23:47:00Z", "s"], ["2026-06-22T12:55:00Z", "r"]], "Mercury": [["2026-06-21T21:46:00Z", "s"], ["2026-06-22T05:42:00Z", "r"]], "Venus": [["2026-06-21T22:44:00Z", "s"], ["2026-06-22T07:00:00Z", "r"]], "Mars": [["2026-06-21T17:17:00Z", "s"], ["2026-06-22T01:46:00Z", "r"], ["2026-06-22T17:18:00Z", "s"]], "Jupiter": [["2026-06-21T22:03:00Z", "s"], ["2026-06-22T06:01:00Z", "r"]], "Saturn": [["2026-06-21T13:17:00Z", "s"], ["2026-06-22T00:33:00Z", "r"], ["2026-06-22T13:13:00Z", "s"]], "Uranus": [["2026-06-21T18:05:00Z", "s"], ["2026-06-22T02:06:00Z", "r"]], "Neptune": [["2026-06-21T12:27:00Z", "s"], ["2026-06-22T00:11:00Z", "r"], ["2026-06-22T12:23:00Z", "s"]], "Pluto": [["2026-06-21T22:38:00Z", "r"], ["2026-06-22T06:29:00Z", "s"]]}};
+let worstMin = 0;
+for (const [from, bodies] of Object.entries(RTS)) {
+  for (const [name, events] of Object.entries(bodies)) {
+    const got = nextRiseSet(name, new Date(from));
+    const wantRise = events.find(e => e[1] === 'r'), wantSet = events.find(e => e[1] === 's');
+    for (const [kind, g, w] of [['rise', got.rise, wantRise], ['set', got.set, wantSet]]) {
+      if (!w) continue;
+      assert(g, `${name} ${kind} missing after ${from}`);
+      const off = Math.abs(g - new Date(w[0])) / 60000;
+      worstMin = Math.max(worstMin, off);
+      assert(off < 4, `${name} ${kind} off by ${off.toFixed(1)} min on ${from}`);
+    }
+  }
+}
+console.log('ok   rise and set times within', worstMin.toFixed(1), 'min of Horizons for the Sun, Moon and all planets');
+
+// Eclipses. The London sky is checked against the partial solar eclipse of 20 March 2015, where
+// NASA/JPL Horizons gives the Sun and Moon 5.01 arcminutes apart at 09:31 UT, Sun 28.61 degrees up.
+const p15 = topocentricMoonSun(toJD(Date.UTC(2015, 2, 20, 9, 31)));
+assert(Math.abs(p15.sepArcmin - 5.01) < 0.3, `separation ${p15.sepArcmin}`);
+assert(Math.abs(p15.sunAltDeg - 28.61) < 0.1, `sun altitude ${p15.sunAltDeg}`);
+const l15 = londonSolarEclipse(new Date(Date.UTC(2015, 2, 20, 9, 46)));
+assert(l15.cover > 0.82 && l15.cover < 0.88, `cover ${l15.cover}`);
+assert(Math.abs(l15.when - Date.UTC(2015, 2, 20, 9, 32)) < 6 * 60000, `peak ${l15.when.toISOString()}`);
+console.log('ok   London sees', Math.round(l15.cover * 100) + '% of the Sun on 20 March 2015, as NASA/JPL puts the Moon 5.0 arcmin from its centre');
+
+// Catalogue sanity: in date order, and the next ones are the known 2027 pair
+const next = nextEclipses(new Date('2026-11-19T20:00:00Z'), 3);
+assert.strictEqual(next[0][1], '2027-02-06');
+assert.strictEqual(next[2][1], '2027-07-18');
+for (let i = 1; i < ECLIPSES.length; i++) assert(eclipseGreatest(ECLIPSES[i]) >= eclipseGreatest(ECLIPSES[i - 1]), 'eclipses out of order');
+assert.strictEqual(lunarEclipseFromLondon(['L', '2026-03-03', '11:34:52', 'Total', '1.151', '03h27m 00h58m', '']), 'none');
+console.log('ok   eclipse table in order,', ECLIPSES.length, 'eclipses to', ECLIPSES[ECLIPSES.length - 1][1]);

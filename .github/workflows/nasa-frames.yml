@@ -1,0 +1,58 @@
+name: Check for NASA moon frames
+
+# NASA publishes a new "Moon Phase and Libration" set each year (the 2026 set appeared on 11 December 2025).
+# The page needs the next year's frames before 1 January, so this looks every Monday. When it finds a
+# complete set it tests the page with it and opens a pull request. Merging that pull request is the
+# whole update: the tablet reloads itself within half an hour.
+on:
+  schedule:
+    - cron: '23 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  frames:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Look for next year's frames
+        id: frames
+        run: node scripts/update-frames.js --write
+
+      - name: Test the page with the new frames
+        if: steps.frames.outputs.changed == 'true'
+        run: |
+          npm test
+          npm run compat
+
+      - name: Open a pull request
+        if: steps.frames.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          YEAR: ${{ steps.frames.outputs.year }}
+          SVS: ${{ steps.frames.outputs.svs }}
+        run: |
+          branch="nasa-frames-$YEAR"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            echo "A branch for $YEAR already exists; leaving it for review."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add -A
+          git commit -m "Use NASA's $YEAR Moon Phase and Libration frames"
+          git push origin "$branch"
+          body="NASA has published the $YEAR hourly Moon frames (SVS $SVS). This switches the page to them. The tests and the iOS 12 compatibility check passed. Merge before 1 January; the tablet picks the change up on its own."
+          gh pr create --base main --head "$branch" --title "Use NASA's $YEAR moon frames" --body "$body" \
+            || gh issue create --title "NASA published the $YEAR moon frames" \
+                 --body "Branch $branch has the update and passed the tests, but a pull request could not be opened. In Settings, Actions, General, turn on 'Allow GitHub Actions to create and approve pull requests', or open the pull request by hand."
