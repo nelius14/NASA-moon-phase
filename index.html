@@ -7,7 +7,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Moon">
   <title>Moon Phase</title>
-  <meta name="build" content="c77017d9d3">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" id="icon-fav" type="image/png" href="img/icon-64.png">
+  <link rel="apple-touch-icon" id="icon-touch" href="img/icon-180.png">
+  <meta name="build" content="84bc357ffe">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inconsolata:wght@300;400&display=swap" rel="stylesheet">
@@ -956,6 +959,14 @@ function skyKind(n, e) {
   return e < 0 ? { kind: 'dawn', txt: 'BEFORE DAWN' } : { kind: 'dusk', txt: 'AFTER SUNSET' };
 }
 
+// Which part of the Moon's disc is lit, for drawing the icon. Waxing lights the right side, waning the
+// left (as seen from the northern hemisphere). `terminator` is cos(elongation): above 0 the day/night
+// edge curves toward the lit limb (a crescent), below 0 it curves away (gibbous), 0 is a straight line.
+function moonIconShape(elong) {
+  const e = norm360(elong), c = Math.cos(e * RAD);
+  return { waxing: e < 180, lit: (1 - c) / 2, terminator: c };
+}
+
 // ── UI ───────────────────────────────────────────────────────
 const COLORS = { Mercury:'#b9b3a8', Venus:'#f0dca8', Earth:'#bfe0ff', Mars:'#e0795f', Jupiter:'#e2c096',
                  Saturn:'#e6d196', Uranus:'#a6dadd', Neptune:'#8aa5ec', Pluto:'#d8b7a0' };
@@ -968,6 +979,55 @@ const SATURN_RING = 2.27;                     // ring width / planet width
 const SATURN_ASPECT = 101 / 256;              // height / width of img/planet-saturn.png
 const ORBIT_TILT_BOOST = 3;                   // vertical exaggeration of orbit tilts (Pluto is left true)
 const VIEW_ELEVATION = 30 * RAD;              // camera height above the ecliptic
+
+// The browser-tab icon and the home-screen icon: the real Moon photograph, lit by tonight's phase.
+const iconTexture = new Image();
+let iconTextureReady = false, iconKey = null, lastElong = null;
+function drawMoonIcon(size, elong) {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d'), c = size / 2, R = size * 0.38, TWO_PI = Math.PI * 2;
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, size, size); // opaque: iOS rounds the corners itself
+  ctx.save(); ctx.beginPath(); ctx.arc(c, c, R, 0, TWO_PI); ctx.clip();
+  ctx.globalAlpha = 0.14; ctx.drawImage(iconTexture, c - R, c - R, 2 * R, 2 * R); // the dark side, faint like earthshine
+  ctx.restore();
+  const shape = moonIconShape(elong);
+  if (shape.lit > 0.004) {
+    ctx.save();
+    if (!shape.waxing) { ctx.translate(size, 0); ctx.scale(-1, 1); }
+    ctx.beginPath();
+    ctx.moveTo(c, c - R);
+    ctx.arc(c, c, R, -Math.PI / 2, Math.PI / 2, false);                       // the lit limb
+    ctx.ellipse(c, c, Math.max(Math.abs(shape.terminator) * R, 0.01), R, 0,   // the day/night edge
+                Math.PI / 2, -Math.PI / 2, shape.terminator > 0);
+    ctx.closePath(); ctx.clip();
+    ctx.drawImage(iconTexture, c - R, c - R, 2 * R, 2 * R);
+    ctx.restore();
+  }
+  ctx.strokeStyle = 'rgba(228,218,188,0.25)'; ctx.lineWidth = Math.max(1, size / 90);
+  ctx.beginPath(); ctx.arc(c, c, R, 0, TWO_PI); ctx.stroke();
+  return canvas.toDataURL('image/png');
+}
+function swapIconLink(id, url) {
+  const old = document.getElementById(id);
+  if (!old) return;
+  const link = document.createElement('link'); // replacing the element makes browsers re-read it
+  link.id = id; link.rel = old.rel; link.type = old.type || ''; link.href = url;
+  old.parentNode.replaceChild(link, old);
+}
+function updateIcons(elong) {
+  lastElong = elong;
+  const key = Math.round(elong * 4);
+  if (!iconTextureReady || key === iconKey) return;
+  try {
+    swapIconLink('icon-fav', drawMoonIcon(64, elong));
+    swapIconLink('icon-touch', drawMoonIcon(180, elong));
+    iconKey = key;
+  } catch (e) { /* keep the fixed icons */ }
+}
+iconTexture.onload = () => { iconTextureReady = true; if (lastElong !== null) updateIcons(lastElong); };
+iconTexture.src = 'img/moon-texture.jpg';
 
 const pad2 = n => (n < 10 ? '0' : '') + n;
 const planetFile = n => 'img/planet-' + n.toLowerCase() + '.png';
@@ -1300,6 +1360,7 @@ window.addEventListener('load', () => {
 
   function renderMoon(now, bustCache) {
     const { phase } = moonData(now);
+    updateIcons(phase * 360);
     const url = frameUrl(now);
     if (url !== shownUrl || bustCache) {
       shownUrl = url;
