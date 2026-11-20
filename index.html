@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#000000">
   <link rel="icon" id="icon-fav" type="image/png" href="img/icon-64.png">
   <link rel="apple-touch-icon" id="icon-touch" href="img/icon-180.png">
-  <meta name="build" content="84bc357ffe">
+  <meta name="build" content="052979b394">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inconsolata:wght@300;400&display=swap" rel="stylesheet">
@@ -111,11 +111,15 @@
       position: relative;
     }
 
+    /* Scale the whole photo to the ring at any screen size. In the 730 px frame the Moon's disc spans
+       about 95% of the width, so a small zoom makes the disc just fill the circle without cropping
+       the dark side (cropping made small screens show a fuller Moon than large ones). */
     #moon-img {
       width: 100%;
       height: 100%;
-      object-fit: none;
-      object-position: center;
+      object-fit: fill;
+      -webkit-transform: scale(1.045);
+      transform: scale(1.045);
       display: block;
     }
 
