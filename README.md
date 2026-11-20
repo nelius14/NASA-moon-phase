@@ -6,9 +6,10 @@ An always-on display for an old iPad (Safari 12): the Moon today, and the solar 
 1. **The Moon.** NASA's photo for the current hour, phase name, age in the cycle, a fading cycle line, a fading four-week distance curve, and the next full and new moon.
 2. **The solar system today.** All nine worlds in one tilted view, a ribbon of where each one sits relative to the Sun in our sky, and a row of morning/evening pills.
 3. **How big is it, really?** True-scale distance and size, so you can see what the other pages squeeze.
-4. **The Moon in detail.** Next quarters, closest and farthest points, apparent width, sunrise, sunset, moonrise and moonset for London, and the next eclipses from NASA's catalogue with what London sees.
+4. **The Moon in detail.** Next quarters, closest and farthest points, apparent width, and sunrise, sunset, moonrise and moonset for London.
+5. **Eclipses.** The next four from NASA's catalogue, with what London sees, and the credits.
 
-Swipe up to move between sections. After two quiet minutes it glides back to the top.
+There are five pages, each exactly one screen tall (the page measures the visible height itself, because iOS counts the toolbars). When you stop scrolling it glides to the nearest page; dots on the right edge show where you are and can be tapped. If the content is taller than the screen, as in Brave with its toolbars, it is scaled down to fit. After two quiet minutes it glides back to page one.
 
 ## Run
 No build step. Open `index.html`, or serve the folder:

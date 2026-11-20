@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#000000">
   <link rel="icon" id="icon-fav" type="image/png" href="img/icon-64.png">
   <link rel="apple-touch-icon" id="icon-touch" href="img/icon-180.png">
-  <meta name="build" content="052979b394">
+  <meta name="build" content="e1fd474dc2">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inconsolata:wght@300;400&display=swap" rel="stylesheet">
@@ -29,10 +29,16 @@
     }
 
     /* ── Page one fills the screen; page two scrolls in below ── */
+    /* Every page is exactly one screen tall. --vh is the real visible height (set in JS), because iOS
+       reports 100vh as the height with the toolbars hidden. */
+    .pg { position: relative; height: 100vh; height: calc(var(--vh, 1vh) * 100); overflow: hidden; }
+    .pg > .fit { max-width: 1024px; margin: 0 auto; padding: 0 24px; }
+    .dots { position: fixed; right: 6px; right: calc(6px + env(safe-area-inset-right, 0px)); top: 50%; margin-top: -55px; z-index: 5; }
+    .dot-btn { display: block; position: relative; width: 22px; height: 22px; }
+    .dot-btn::after { content: ""; position: absolute; left: 7px; top: 7px; width: 8px; height: 8px; border-radius: 50%; background: rgba(228,218,188,.3); }
+    .dot-btn.on::after { background: rgba(228,218,188,.95); }
     .screen {
       position: relative;
-      min-height: 100vh;
-      min-height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -61,7 +67,7 @@
       display: flex;
       align-items: center;
       padding: 2rem;
-      animation: rise 1.2s ease both;
+      animation: rise 1.2s ease backwards;
     }
     .layout > * + * { margin-left: 4rem; }
     @keyframes rise {
@@ -104,8 +110,8 @@
     /* ── Moon ────────────────────────────── */
     .moon-ring {
       flex-shrink: 0;
-      width: min(82vh, 680px);
-      height: min(82vh, 680px);
+      width: min(calc(var(--vh, 1vh) * 82), 680px);
+      height: min(calc(var(--vh, 1vh) * 82), 680px);
       border-radius: 50%;
       overflow: hidden;
       position: relative;
@@ -282,7 +288,8 @@
       color: rgba(180,172,155,0.85); text-transform: uppercase; margin-bottom: 0.7rem;
     }
 
-    .sec { position: relative; max-width: 1024px; margin: 0 auto; padding: 2.2rem 24px 1.2rem; }
+    .sec { position: relative; }
+    .sec.details { padding: 0; max-width: none; margin: 0; }
     .sec-title { font-style: italic; font-weight: 300; font-size: 2.2rem; letter-spacing: .04em; color: rgba(228,218,188,.95); }
     .sec-sub { font-family: 'Inconsolata', monospace; font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: rgba(190,182,160,.92); margin: .3rem 0 1rem; }
     .cap { font-family: 'Inconsolata', monospace; font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; color: rgba(205,197,175,.92); margin: .5rem 0 .6rem; }
@@ -328,7 +335,7 @@
 </head>
 <body>
 
-<section class="screen">
+<section class="screen pg" id="p-moon">
 <div class="layout">
 
   <!-- Left: moon photograph -->
@@ -379,19 +386,20 @@
 
   </div>
 </div>
+<div class="dots" id="dots"></div>
 <div class="scroll-hint">Swipe up for the solar system</div>
 </section>
 
-<section class="sec" id="solar">
+<section class="sec pg" id="solar"><div class="fit">
   <div class="sec-title">The solar system today</div>
   <div class="sec-sub">Seen from 30° above the ecliptic · <span id="solar-date"></span> · everything calculated live</div>
   <div class="wide" id="orrery"></div>
   <div class="wide" id="ribbon"></div>
   <div class="cap">Where to look: each planet's angle from the Sun, as seen from Earth tonight · Pluto is a dwarf planet</div>
   <div class="row9" id="planet-row"></div>
-</section>
+</div></section>
 
-<section class="sec" id="scale">
+<section class="sec pg" id="scale"><div class="fit">
   <div class="sec-title">How big is it, really?</div>
   <div class="sec-sub">Everything in this section is true to scale</div>
   <div class="h3">Distance</div>
@@ -405,9 +413,9 @@
     <div><b>On the solar system page: size</b>Icons grow with radius to the power ¼. Jupiter shows 1.8× Earth, in truth 11×.</div>
     <div><b>On the solar system page: tilt</b>Orbit tilts are drawn ×3. Pluto's 17° is drawn as it really is.</div>
   </div>
-</section>
+</div></section>
 
-<section class="sec details" id="details">
+<section class="sec details pg" id="details"><div class="fit">
   <div class="sec-title">The Moon in detail</div>
   <div class="details-grid" style="margin-top:1.4rem">
     <div>
@@ -444,16 +452,19 @@
       </div>
     </div>
   </div>
-  <div class="card-title" style="margin-top:2.4rem">Eclipses</div>
-  <div class="eclipse-note">Never look at the Sun without proper eclipse glasses. The Moon at a partial or total lunar eclipse is safe to watch.</div>
-  <div class="details-grid" id="eclipse-rows" style="margin-top:1rem"></div>
+</div></section>
+
+<section class="sec pg" id="eclipses"><div class="fit">
+  <div class="sec-title">Eclipses</div>
+  <div class="eclipse-note" style="margin-top:.6rem">Never look at the Sun without proper eclipse glasses. The Moon at a partial or total lunar eclipse is safe to watch.</div>
+  <div class="details-grid" id="eclipse-rows" style="margin-top:1.2rem"></div>
   <div class="credit">
     Positions: the Moon and Sun from Meeus, Astronomical Algorithms; the planets from NASA/JPL's approximate orbital elements (accurate to about a tenth of a degree).<br>
     Eclipse dates: NASA/GSFC Eclipse Web Site, Fred Espenak. London coverage is calculated here.<br>
     Moon photograph: NASA Scientific Visualization Studio, Moon Phase and Libration 2026 (Lunar Reconnaissance Orbiter). Public domain.<br>
     Planet photographs: NASA missions (MESSENGER, Mariner 10, Apollo 17, Hubble, Cassini, Voyager 2, New Horizons), via Wikimedia Commons, all in the public domain. Rise and set times are for London (51.51° N, 0.13° W), to within a couple of minutes.
   </div>
-</section>
+</div></section>
 
 <script>
 // ── Lunar maths ──────────────────────────────────────────────
@@ -1455,30 +1466,82 @@ window.addEventListener('load', () => {
     renderMoon(now, bust);
     renderDetails(now);
     if (bust || minutes % 5 === 0) renderSolar(now);
+    if (typeof fitPages === 'function') fitPages();
   }
   tick();
   everything(false);
-  document.fonts.ready.then(fitTime);
+  document.fonts.ready.then(() => { fitTime(); fitPages(); });
   setInterval(() => { minutes++; everything(false); }, 60000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') everything(true); });
 
-  // After two quiet minutes anywhere but the top, glide back to page one
-  let idleTimer = null, glide = null;
-  function glideToTop() {
-    const from = window.pageYOffset, t0 = Date.now();
+  // ── Pages: fit each to the screen, snap to the nearest, show where you are ──
+  const pages = Array.prototype.slice.call(document.querySelectorAll('.pg'));
+  const dotsEl = document.getElementById('dots');
+  const topOf = p => p.getBoundingClientRect().top + window.pageYOffset;
+  function fitPages() {
+    const vh = window.innerHeight, avail = vh - 28;
+    document.documentElement.style.setProperty('--vh', (vh / 100) + 'px');
+    Array.prototype.forEach.call(document.querySelectorAll('.fit'), el => {
+      el.style.transform = 'none'; el.style.marginTop = '0px';
+      const h = el.offsetHeight, k = Math.min(1, avail / h);
+      el.style.transformOrigin = 'top center';
+      el.style.transform = k < 1 ? 'scale(' + k.toFixed(4) + ')' : 'none';
+      el.style.marginTop = Math.max(0, (vh - h * k) / 2) + 'px';
+    });
+    const layout = document.querySelector('.layout');
+    layout.style.transform = 'none';
+    const k1 = Math.min(1, avail / layout.offsetHeight);
+    layout.style.transform = k1 < 1 ? 'scale(' + k1.toFixed(4) + ')' : 'none';
+  }
+  function nearestPage() {
+    const y = window.pageYOffset;
+    let best = 0, bestD = Infinity;
+    pages.forEach((p, i) => { const d = Math.abs(topOf(p) - y); if (d < bestD) { bestD = d; best = i; } });
+    return best;
+  }
+  function markDots() {
+    const on = nearestPage();
+    Array.prototype.forEach.call(dotsEl.children, (d, i) => { d.className = 'dot-btn' + (i === on ? ' on' : ''); });
+  }
+  let glide = null, gliding = false;
+  function stopGlide() { if (glide) { clearInterval(glide); glide = null; } gliding = false; }
+  function glideTo(y, ms) {
+    stopGlide();
+    const from = window.pageYOffset, dist = y - from;
+    if (Math.abs(dist) < 2) return;
+    const t0 = Date.now();
+    gliding = true; // our own scrolling must not count as the user scrolling
     glide = setInterval(() => {
-      const p = Math.min(1, (Date.now() - t0) / 800);
-      window.scrollTo(0, from * (1 - p * p * (3 - 2 * p)));
-      if (p === 1) { clearInterval(glide); glide = null; }
+      const p = Math.min(1, (Date.now() - t0) / ms);
+      window.scrollTo(0, from + dist * (p * p * (3 - 2 * p)));
+      if (p === 1) { clearInterval(glide); glide = null; setTimeout(() => { gliding = false; markDots(); }, 80); }
     }, 16);
   }
-  function touched() {
-    if (glide) { clearInterval(glide); glide = null; }
-    clearTimeout(idleTimer);
-    if (window.pageYOffset > 20) idleTimer = setTimeout(glideToTop, 120000);
+  pages.forEach((p, i) => {
+    const b = document.createElement('span');
+    b.className = 'dot-btn';
+    b.addEventListener('click', () => glideTo(topOf(pages[i]), 450));
+    dotsEl.appendChild(b);
+  });
+
+  let snapTimer = null, idleTimer = null, touching = false;
+  function snapSoon() {
+    clearTimeout(snapTimer);
+    snapTimer = setTimeout(() => { if (!touching && !gliding) glideTo(topOf(pages[nearestPage()]), 300); }, 170);
   }
-  window.addEventListener('scroll', touched);
-  window.addEventListener('touchstart', touched);
+  function userActive() {
+    clearTimeout(idleTimer);
+    if (window.pageYOffset > 20) idleTimer = setTimeout(() => glideTo(0, 800), 120000); // two quiet minutes: back to page one
+  }
+  window.addEventListener('scroll', () => {
+    if (gliding) return;
+    markDots(); snapSoon(); userActive();
+  });
+  window.addEventListener('touchstart', () => { touching = true; stopGlide(); clearTimeout(snapTimer); userActive(); });
+  window.addEventListener('touchend', () => { touching = false; snapSoon(); });
+  window.addEventListener('resize', () => { fitPages(); window.scrollTo(0, topOf(pages[nearestPage()])); markDots(); });
+  window.addEventListener('orientationchange', () => setTimeout(() => { fitPages(); markDots(); }, 300));
+  fitPages(); markDots();
 
   // Keep an always-on tablet current: pick up new versions of this page, and start fresh each night
   const BUILD = (document.querySelector('meta[name="build"]') || { content: '' }).content;
