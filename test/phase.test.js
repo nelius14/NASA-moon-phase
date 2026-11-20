@@ -9,8 +9,8 @@ const html = fs.readFileSync(process.env.INDEX_HTML || path.join(__dirname, '..'
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1].split('// ── UI')[0];
 const ctx = {};
 vm.createContext(ctx);
-vm.runInContext(script + ';this.api={elongation,toJD,moonData,phaseName,frameUrl,nextPhaseEvent,moonDistance,nextDistanceExtreme,lunation,distanceExtremes,planetPosition,planetSky,skyKind,PLANETS,nextRiseSet,topocentricMoonSun,londonSolarEclipse,lunarEclipseFromLondon,nextEclipses,eclipseGreatest,ECLIPSES}', ctx);
-const { elongation, toJD, moonData, phaseName, frameUrl, nextPhaseEvent, moonDistance, nextDistanceExtreme, lunation, distanceExtremes, planetPosition, planetSky, skyKind, PLANETS, nextRiseSet, topocentricMoonSun, londonSolarEclipse, lunarEclipseFromLondon, nextEclipses, eclipseGreatest, ECLIPSES } = ctx.api;
+vm.runInContext(script + ';this.api={elongation,toJD,moonData,phaseName,frameUrl,nextPhaseEvent,moonDistance,nextDistanceExtreme,lunation,distanceExtremes,planetPosition,planetSky,skyKind,PLANETS,nextRiseSet,topocentricMoonSun,londonSolarEclipse,lunarEclipseFromLondon,nextEclipses,eclipseGreatest,ECLIPSES,moonIconShape}', ctx);
+const { elongation, toJD, moonData, phaseName, frameUrl, nextPhaseEvent, moonDistance, nextDistanceExtreme, lunation, distanceExtremes, planetPosition, planetSky, skyKind, PLANETS, nextRiseSet, topocentricMoonSun, londonSolarEclipse, lunarEclipseFromLondon, nextEclipses, eclipseGreatest, ECLIPSES, moonIconShape } = ctx.api;
 
 // [label, UTC time, expected elongation in degrees]
 const events = [
@@ -147,3 +147,12 @@ assert.strictEqual(next[2][1], '2027-07-18');
 for (let i = 1; i < ECLIPSES.length; i++) assert(eclipseGreatest(ECLIPSES[i]) >= eclipseGreatest(ECLIPSES[i - 1]), 'eclipses out of order');
 assert.strictEqual(lunarEclipseFromLondon(['L', '2026-03-03', '11:34:52', 'Total', '1.151', '03h27m 00h58m', '']), 'none');
 console.log('ok   eclipse table in order,', ECLIPSES.length, 'eclipses to', ECLIPSES[ECLIPSES.length - 1][1]);
+
+// Icon shape: waxing lights the right, waning the left, and the lit share follows the elongation
+const quarter = moonIconShape(90), crescent = moonIconShape(45), gibbous = moonIconShape(135), waning = moonIconShape(270);
+assert(quarter.waxing && Math.abs(quarter.lit - 0.5) < 1e-9 && Math.abs(quarter.terminator) < 1e-9, 'first quarter is half lit, straight edge');
+assert(crescent.waxing && crescent.lit < 0.25 && crescent.terminator > 0, 'waxing crescent curves toward the lit limb');
+assert(gibbous.waxing && gibbous.lit > 0.75 && gibbous.terminator < 0, 'waxing gibbous curves away from it');
+assert(!waning.waxing && Math.abs(waning.lit - 0.5) < 1e-9, 'last quarter lights the left half');
+assert(moonIconShape(0).lit < 1e-9 && moonIconShape(180).lit > 1 - 1e-9, 'new is dark, full is lit');
+console.log('ok   moon icon shapes');

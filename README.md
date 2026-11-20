@@ -25,6 +25,7 @@ python3 -m http.server 8080
 - **Planet photos:** NASA missions via Wikimedia Commons, in `img/`. All nine are public domain.
 - **Rise and set times:** calculated for London (51.51° N, 0.13° W). The Sun, Moon and all planets agree with Horizons to within 2 minutes.
 - **Eclipses:** dates from NASA/GSFC (Fred Espenak), 2027 to 2040. What London sees is calculated here: lunar eclipses from the Moon's height, solar eclipses from the Sun and Moon's positions as seen from London.
+- **Icon:** the browser-tab icon and the home-screen icon are drawn in the page from a NASA full-moon photograph (`img/moon-texture.jpg`), lit by tonight's calculated phase. The tab icon follows the Moon through the day. iOS fixes a home-screen icon when it is added, so that one shows the phase on the day you tapped "Add to Home Screen". `img/icon-180.png` and `img/icon-64.png` (a full moon) are the fallbacks if scripts are blocked.
 - **Refresh:** every minute; the planets every five.
 
 ## Keeping the tablet up to date
