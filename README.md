@@ -9,7 +9,7 @@ An always-on display for an old iPad (Safari 12): the Moon today, and the solar 
 4. **The Moon in detail.** Next quarters, closest and farthest points, apparent width, and sunrise, sunset, moonrise and moonset for London.
 5. **Eclipses.** The next four from NASA's catalogue, with what London sees, and the credits.
 
-There are five pages, each exactly one screen tall (the page measures the visible height itself, because iOS counts the toolbars). When you stop scrolling it glides to the nearest page; dots on the right edge show where you are and can be tapped. If the content is taller than the screen, as in Brave with its toolbars, it is scaled down to fit. After two quiet minutes it glides back to page one.
+There are five pages, each exactly one screen tall (the page measures the visible height itself, because iOS counts the toolbars). When you stop scrolling it glides to the nearest page; dots on the right edge show where you are and can be tapped. If the content is taller than the screen, as in Brave with its toolbars, it is scaled down to fit. After two quiet minutes it glides back to page one (add `?idle=3` to the address to make that three seconds, for testing).
 
 ## Run
 No build step. Open `index.html`, or serve the folder:

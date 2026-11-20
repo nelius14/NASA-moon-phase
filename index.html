@@ -1678,6 +1678,8 @@ window.addEventListener('load', () => {
     dotsEl.appendChild(b);
   });
 
+  // Two quiet minutes by default; add ?idle=3 to the address to make it three seconds, for testing
+  const IDLE_MS = (window.URLSearchParams && +new URLSearchParams(location.search).get('idle') * 1000) || 120000;
   let snapTimer = null, idleTimer = null, touching = false;
   function snapSoon() {
     clearTimeout(snapTimer);
@@ -1685,7 +1687,7 @@ window.addEventListener('load', () => {
   }
   function userActive() {
     clearTimeout(idleTimer);
-    if (window.pageYOffset > 20) idleTimer = setTimeout(() => glideTo(0, 800), 120000); // two quiet minutes: back to page one
+    if (window.pageYOffset > 20) idleTimer = setTimeout(() => glideTo(0, 800), IDLE_MS); // quiet for a while: back to page one
   }
   window.addEventListener('scroll', () => {
     if (gliding) return;
