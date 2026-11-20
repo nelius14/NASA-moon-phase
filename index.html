@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#000000">
   <link rel="icon" id="icon-fav" type="image/png" href="img/icon-64.png">
   <link rel="apple-touch-icon" id="icon-touch" href="img/icon-180.png">
-  <meta name="build" content="e1fd474dc2">
+  <meta name="build" content="5d4306103c">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Inconsolata:wght@300;400&display=swap" rel="stylesheet">
@@ -259,11 +259,11 @@
     /* credit */
     .credit {
       font-family: 'Inconsolata', monospace;
-      font-size: 0.7rem;
-      letter-spacing: 0.09em;
-      color: rgba(180,172,155,0.7);
-      margin-top: 3rem;
-      line-height: 1.8;
+      font-size: 0.6rem;
+      letter-spacing: 0.06em;
+      color: rgba(190,182,160,0.8);
+      margin-top: 1.2rem;
+      line-height: 1.7;
     }
   
     @media (orientation: landscape) {
@@ -317,6 +317,34 @@
     .moon-dot.ecl.lunar { background: #a85a3c; border-color: #a85a3c; }
     .event-lon { font-family: 'Inconsolata', monospace; font-size: .72rem; letter-spacing: .04em; color: #eee4c6; margin-top: 2px; }
     .eclipse-note { font-family: 'Inconsolata', monospace; font-size: .7rem; letter-spacing: .05em; color: rgba(222,214,190,.95); }
+    .ecl-head { display: flex; align-items: baseline; justify-content: space-between; }
+    .ecards { display: grid; grid-template-columns: repeat(4, 1fr); grid-column-gap: 14px; margin-top: 0.9rem; }
+    @media (orientation: portrait) { .ecards { grid-template-columns: repeat(2, 1fr); grid-row-gap: 14px; } }
+    .ecard { position: relative; text-align: center; padding: 14px 8px 14px; border: 1px solid rgba(228,218,188,.16); border-radius: 14px; background: rgba(228,218,188,.035); min-width: 0; }
+    .enum { position: absolute; left: 10px; top: 10px; width: 22px; height: 22px; border-radius: 50%; background: #eee4c6; color: #111; font-family: 'Inconsolata', monospace; font-weight: 700; font-size: .74rem; line-height: 22px; }
+    .epic svg { display: block; width: 132px; height: 132px; margin: 0 auto; }
+    .etype { font-size: 1.9rem; font-weight: 400; color: #eee4c6; line-height: 1.05; margin-top: 4px; }
+    .ekind { font-family: 'Inconsolata', monospace; font-size: .72rem; letter-spacing: .14em; color: rgba(205,197,175,.95); margin-bottom: 8px; }
+    .edate { font-family: 'Inconsolata', monospace; font-size: .86rem; letter-spacing: .06em; color: #eee4c6; }
+    .eaway { display: inline-block; margin: 6px 0 5px; padding: 3px 11px; border-radius: 11px; background: #f0b35a; color: #1a1206; font-family: 'Inconsolata', monospace; font-size: .78rem; letter-spacing: .05em; }
+    .eplace { font-family: 'Inconsolata', monospace; font-size: .66rem; letter-spacing: .04em; color: rgba(190,182,160,.95); min-height: 1.1em; margin-bottom: 10px; }
+    .gauge { height: 8px; border-radius: 4px; background: rgba(228,218,188,.14); margin: 0 6px; overflow: hidden; }
+    .gfill { height: 100%; background: #ffd98a; }
+    .gtxt { font-family: 'Inconsolata', monospace; font-size: .72rem; letter-spacing: .05em; color: #eee4c6; margin-top: 6px; line-height: 1.35; }
+    .gtxt.none { color: rgba(190,182,160,.85); }
+    .gtxt small { font-size: .64rem; color: rgba(205,197,175,.95); }
+    .lpill { display: inline-block; padding: 4px 9px; border-radius: 11px; font-family: 'Inconsolata', monospace; font-size: .66rem; letter-spacing: .04em; }
+    .lpill.all { background: #ece6d0; color: #161616; }
+    .lpill.part { background: #d9825a; color: #1c0b05; }
+    .lpill.none { background: #2c2c2c; color: #c9c3b0; }
+    .ecl-legend { font-family: 'Inconsolata', monospace; font-size: .68rem; letter-spacing: .06em; color: rgba(205,197,175,.95); margin-top: 2px; }
+    .ecl-legend span { margin-right: 18px; white-space: nowrap; }
+    .ecl-legend .lg-note { margin-left: 8px; color: rgba(190,182,160,.9); }
+    .g { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; border: 2px solid #ffd98a; }
+    .gt { background: #ffd98a; }
+    .ga { background: #000; }
+    .gp { background: -webkit-linear-gradient(left, transparent 50%, #ffd98a 50%); background: linear-gradient(90deg, transparent 50%, #ffd98a 50%); border-width: 1px; }
+    .gn { border-style: dotted; border-width: 1.5px; background: transparent; }
     .moon-dot.sun { background: #ffd98a; border-color: #ffd98a; }
     .moon-dot.sun.set { background: transparent; }
     .lt { font-family: 'Inconsolata', monospace; font-size: .68rem; letter-spacing: .06em; color: rgba(205,197,175,.92); margin-top: 2px; }
@@ -455,14 +483,19 @@
 </div></section>
 
 <section class="sec pg" id="eclipses"><div class="fit">
-  <div class="sec-title">Eclipses</div>
-  <div class="eclipse-note" style="margin-top:.6rem">Never look at the Sun without proper eclipse glasses. The Moon at a partial or total lunar eclipse is safe to watch.</div>
-  <div class="details-grid" id="eclipse-rows" style="margin-top:1.2rem"></div>
+  <div class="ecl-head">
+    <div class="sec-title">Eclipses</div>
+    <div class="eclipse-note">Never look at the Sun without proper eclipse glasses.</div>
+  </div>
+  <div class="ecards" id="eclipse-cards"></div>
+  <div class="wide" id="eclipse-timeline"></div>
+  <div class="ecl-legend">
+    <span><i class="g gt"></i>total</span><span><i class="g ga"></i>annular</span><span><i class="g gp"></i>partial</span><span><i class="g gn"></i>penumbral</span>
+    <span class="lg-note">Bright with a halo: London can see it. Dim: it can't.</span>
+  </div>
   <div class="credit">
-    Positions: the Moon and Sun from Meeus, Astronomical Algorithms; the planets from NASA/JPL's approximate orbital elements (accurate to about a tenth of a degree).<br>
-    Eclipse dates: NASA/GSFC Eclipse Web Site, Fred Espenak. London coverage is calculated here.<br>
-    Moon photograph: NASA Scientific Visualization Studio, Moon Phase and Libration 2026 (Lunar Reconnaissance Orbiter). Public domain.<br>
-    Planet photographs: NASA missions (MESSENGER, Mariner 10, Apollo 17, Hubble, Cassini, Voyager 2, New Horizons), via Wikimedia Commons, all in the public domain. Rise and set times are for London (51.51° N, 0.13° W), to within a couple of minutes.
+    Eclipse dates: NASA/GSFC Eclipse Web Site (Fred Espenak). What London sees is calculated here. Pictures: the Sun by NASA's Solar Dynamics Observatory, the Moon by NASA's Lunar Reconnaissance Orbiter; the shadows are drawn to scale, not photographed.<br>
+    Positions: the Moon and Sun from Meeus, Astronomical Algorithms; the planets from NASA/JPL's approximate orbital elements. Planet photographs: NASA missions via Wikimedia Commons, all public domain. Times are for London (51.51° N, 0.13° W).
   </div>
 </div></section>
 
@@ -792,16 +825,48 @@ function discOverlap(rSun, rMoon, d) {
 }
 
 // Greatest eclipse in London: { cover: 0..1, when: Date, sunAlt } or null when the Sun is not covered while up.
+// A coarse six-minute scan finds the peak, then a half-minute scan sharpens it.
 function londonSolarEclipse(greatest) {
-  const g = toJD(greatest), STEP = 2 / 1440;
-  let best = null;
-  for (let t = g - 5 / 24; t <= g + 5 / 24; t += STEP) {
+  const g = toJD(greatest), MIN = 1 / 1440;
+  const coverAt = t => {
     const p = topocentricMoonSun(t);
-    if (p.sunAltDeg < -0.8) continue; // Sun below the horizon
-    const cover = discOverlap(p.sunRadArcmin, p.moonRadArcmin, p.sepArcmin);
-    if (cover > 0.001 && (!best || cover > best.cover)) best = { cover, when: new Date((t - 2440587.5) * 86400000), sunAlt: p.sunAltDeg };
+    return p.sunAltDeg < -0.8 ? -1 : discOverlap(p.sunRadArcmin, p.moonRadArcmin, p.sepArcmin);
+  };
+  let bestT = null, best = 0.001;
+  for (let t = g - 5 / 24; t <= g + 5 / 24; t += 6 * MIN) { const c = coverAt(t); if (c > best) { best = c; bestT = t; } }
+  if (bestT === null) return null;
+  const centre = bestT;
+  for (let t = centre - 6 * MIN; t <= centre + 6 * MIN; t += 0.5 * MIN) { const c = coverAt(t); if (c > best) { best = c; bestT = t; } }
+  return { cover: best, when: new Date((bestT - 2440587.5) * 86400000), sunAlt: topocentricMoonSun(bestT).sunAltDeg };
+}
+
+// How two discs sit at the greatest eclipse, for drawing (the direction is up to the picture).
+// Solar: the Sun's radius is 1; the Moon's radius is the magnitude when central, and d is the gap between centres.
+function solarEclipseShape(type, mag) {
+  const m = +mag;
+  if (type === 'Total' || type === 'Annular' || type === 'Hybrid') return { rm: m, d: 0, central: true };
+  return { rm: 1, d: Math.max(0, 2 * (1 - m)), central: false };
+}
+// Lunar: distances are in Moon radii. Earth's shadow is about 2.65 Moon radii across at the Moon's distance.
+const UMBRA_RADII = 2.65;
+function lunarEclipseShape(type, mag) {
+  if (type === 'Penumbral') return { penumbral: true, d: null };
+  return { penumbral: false, d: Math.max(0, UMBRA_RADII + 1 - 2 * +mag) };
+}
+
+// What London sees of an eclipse, worked out once and remembered: { see: 'some'|'none'|'all'|'part', cover, when, sunAlt }
+const londonViews = {};
+function londonView(e) {
+  const key = e[0] + e[1];
+  if (!(key in londonViews)) {
+    if (e[0] === 'S') {
+      const l = londonSolarEclipse(eclipseGreatest(e));
+      londonViews[key] = l ? { see: 'some', cover: l.cover, when: l.when, sunAlt: l.sunAlt } : { see: 'none' };
+    } else {
+      londonViews[key] = { see: lunarEclipseFromLondon(e) };
+    }
   }
-  return best;
+  return londonViews[key];
 }
 
 // ── Eclipses ─────────────────────────────────────────────────
@@ -1325,6 +1390,95 @@ function sizesHtml() {
   return h;
 }
 
+// ── Eclipse pictures and timeline ──
+let pictureId = 0;
+function eclipsePictureSvg(e) {
+  const id = 'ec' + (pictureId++), solar = e[0] === 'S', R = 38;
+  let s = '<svg viewBox="-60 -60 120 120"><defs><clipPath id="' + id + 'c"><circle r="' + R + '"/></clipPath>';
+  if (solar) {
+    s += '<radialGradient id="' + id + 'a"><stop offset="0.7" stop-color="#ff9a3c" stop-opacity="0.5"/><stop offset="1" stop-color="#ff9a3c" stop-opacity="0"/></radialGradient>' +
+         '<radialGradient id="' + id + 'g"><stop offset="0.6" stop-color="#fff6e0" stop-opacity="0.95"/><stop offset="0.78" stop-color="#cfd8ff" stop-opacity="0.35"/><stop offset="1" stop-color="#cfd8ff" stop-opacity="0"/></radialGradient></defs>';
+    const sh = solarEclipseShape(e[3], e[4]), rm = sh.rm * R, dx = -0.8 * sh.d * R, dy = 0.6 * sh.d * R;
+    if (e[3] === 'Total' || e[3] === 'Hybrid') s += '<circle r="58" fill="url(#' + id + 'g)"/>'; // the corona, only seen when the Moon fully covers the Sun
+    if (e[3] === 'Annular') s += '<circle r="52" fill="url(#' + id + 'a)"/>'; // a warm glow so the thin ring of sunlight stands out
+    s += '<image xlink:href="img/sun.jpg" x="' + -R + '" y="' + -R + '" width="' + 2 * R + '" height="' + 2 * R + '" clip-path="url(#' + id + 'c)"/>' +
+         '<circle cx="' + dx.toFixed(1) + '" cy="' + dy.toFixed(1) + '" r="' + rm.toFixed(1) + '" fill="#050505"/>';
+  } else {
+    const sh = lunarEclipseShape(e[3], e[4]);
+    s += '<radialGradient id="' + id + 'u"><stop offset="0.96" stop-color="' + (+e[4] >= 1 ? 'rgb(112,32,14)' : 'rgb(20,7,4)') + '" stop-opacity="0.86"/><stop offset="1" stop-color="rgb(20,7,4)" stop-opacity="0.15"/></radialGradient>' +
+         '<linearGradient id="' + id + 'p" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity="0.58"/><stop offset="0.75" stop-color="#000" stop-opacity="0"/></linearGradient></defs>' +
+         '<image xlink:href="img/moon-texture.jpg" x="' + -R + '" y="' + -R + '" width="' + 2 * R + '" height="' + 2 * R + '" clip-path="url(#' + id + 'c)"/>';
+    if (sh.penumbral) {
+      s += '<rect x="' + -R + '" y="' + -R + '" width="' + 2 * R + '" height="' + 2 * R + '" fill="url(#' + id + 'p)" clip-path="url(#' + id + 'c)"/>';
+    } else {
+      const ru = UMBRA_RADII * R, dx = -0.8 * sh.d * R, dy = 0.6 * sh.d * R;
+      s += '<circle cx="' + dx.toFixed(1) + '" cy="' + dy.toFixed(1) + '" r="' + ru.toFixed(1) + '" fill="url(#' + id + 'u)" clip-path="url(#' + id + 'c)"/>';
+    }
+  }
+  return s + '<circle r="' + R + '" fill="none" stroke="rgba(228,218,188,0.18)"/></svg>';
+}
+
+const ECLIPSE_NAMES = { Total: 'Total', Annular: 'Annular', Hybrid: 'Hybrid', Partial: 'Partial', Penumbral: 'Penumbral' };
+function shortPlaces(text) {
+  const parts = text.split(',').map(x => x.trim()).filter(Boolean);
+  const out = parts.slice(0, 3).join(', ');
+  return out.length > 34 ? out.slice(0, 33) + '…' : out + (parts.length > 3 ? '…' : '');
+}
+function eclipseCardHtml(e, n, now) {
+  const solar = e[0] === 'S', when = eclipseGreatest(e), v = londonView(e);
+  const date = when.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).replace(',', '').toUpperCase();
+  const days = Math.round((when - now) / 86400000);
+  const away = days < 120 ? 'in ' + days + ' days' : 'in ' + Math.round(days / 30.44) + ' months';
+  let london;
+  if (solar) {
+    const pct = v.see === 'some' ? Math.round(v.cover * 100) : 0;
+    london = '<div class="gauge"><div class="gfill" style="width:' + pct + '%"></div></div>' +
+      '<div class="gtxt' + (pct ? '' : ' none') + '">' + (pct ? 'LONDON SEES ' + pct + '%' + (v.sunAlt < 5 ? ' · SUN LOW' : '') + '<br><small>at its most, ' + fmtClock(v.when) + '</small>' : 'NOT VISIBLE FROM LONDON') + '</div>';
+  } else {
+    const txt = { all: 'VISIBLE FROM LONDON', part: 'PARTLY VISIBLE FROM LONDON', none: 'NOT VISIBLE FROM LONDON' }[v.see];
+    london = '<div class="lpill ' + v.see + '">' + txt + '</div>' + (e[3] === 'Penumbral' && v.see !== 'none' ? '<div class="gtxt"><small>only a faint shading</small></div>' : '');
+  }
+  return '<div class="ecard"><div class="enum">' + n + '</div><div class="epic">' + eclipsePictureSvg(e) + '</div>' +
+    '<div class="etype">' + ECLIPSE_NAMES[e[3]] + '</div><div class="ekind">' + (solar ? 'SOLAR' : 'LUNAR') + ' ECLIPSE</div>' +
+    '<div class="edate">' + date + '</div><div class="eaway">' + away + '</div>' +
+    '<div class="eplace">' + shortPlaces(e[6]) + '</div>' + london + '</div>';
+}
+
+// Every eclipse from now to 2040 on one line each for solar and lunar; bright with a halo when London can see it
+function eclipseTimelineSvg(now) {
+  const W = 976, H = 170, x0 = 78, x1 = W - 20, start = now.getTime(), end = Date.UTC(2041, 0, 1);
+  const X = t => x0 + (t - start) / (end - start) * (x1 - x0);
+  const upcoming = nextEclipses(now, 100), firstFour = upcoming.slice(0, 4);
+  const lanes = { S: 64, L: 118 }, colour = { S: '#ffd98a', L: '#d9825a' };
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '">';
+  for (const k of ['S', 'L']) {
+    s += '<line x1="' + x0 + '" x2="' + x1 + '" y1="' + lanes[k] + '" y2="' + lanes[k] + '" stroke="rgba(228,218,188,.22)"/>' +
+         '<text x="4" y="' + (lanes[k] + 4) + '" class="pl" fill="' + colour[k] + '">' + (k === 'S' ? 'SOLAR' : 'LUNAR') + '</text>';
+  }
+  for (let y = now.getUTCFullYear() + 1; y <= 2040; y++) {
+    const x = X(Date.UTC(y, 0, 1));
+    s += '<line x1="' + x + '" x2="' + x + '" y1="32" y2="136" stroke="rgba(228,218,188,.1)"/><text x="' + x + '" y="156" text-anchor="middle" class="t">' + y + '</text>';
+  }
+  for (const e of upcoming) {
+    const x = X(eclipseGreatest(e).getTime()), y = lanes[e[0]], c = colour[e[0]], v = londonViews[e[0] + e[1]];
+    const yes = v && (v.see === 'all' || v.see === 'part' || (v.see === 'some' && v.cover >= 0.1));
+    const op = !v ? 0.55 : (yes ? 1 : 0.32);
+    const type = e[3];
+    if (yes) s += '<circle cx="' + x.toFixed(1) + '" cy="' + y + '" r="11" fill="none" stroke="' + c + '" stroke-opacity="0.55"/>';
+    s += '<g opacity="' + op + '">';
+    if (type === 'Total') s += '<circle cx="' + x.toFixed(1) + '" cy="' + y + '" r="6" fill="' + c + '"/>';
+    else if (type === 'Hybrid') s += '<circle cx="' + x.toFixed(1) + '" cy="' + y + '" r="6" fill="' + c + '" stroke="#000" stroke-width="1.5"/><circle cx="' + x.toFixed(1) + '" cy="' + y + '" r="6" fill="none" stroke="' + c + '"/>';
+    else if (type === 'Annular') s += '<circle cx="' + x.toFixed(1) + '" cy="' + y + '" r="5.2" fill="#000" stroke="' + c + '" stroke-width="2.6"/>';
+    else if (type === 'Partial') s += '<circle cx="' + x.toFixed(1) + '" cy="' + y + '" r="6" fill="none" stroke="' + c + '"/><path d="M' + x.toFixed(1) + ',' + (y - 6) + ' A6,6 0 0 1 ' + x.toFixed(1) + ',' + (y + 6) + ' Z" fill="' + c + '"/>';
+    else s += '<circle cx="' + x.toFixed(1) + '" cy="' + y + '" r="5" fill="none" stroke="' + c + '" stroke-width="1.4" stroke-dasharray="2 2"/>';
+    s += '</g>';
+    const n = firstFour.indexOf(e);
+    if (n >= 0) s += '<line x1="' + x.toFixed(1) + '" x2="' + x.toFixed(1) + '" y1="' + (y - 16) + '" y2="' + (y - 8) + '" stroke="#eee4c6"/><circle cx="' + x.toFixed(1) + '" cy="' + (y - 24) + '" r="8" fill="#eee4c6"/>' +
+      '<text x="' + x.toFixed(1) + '" y="' + (y - 20.5) + '" text-anchor="middle" style="font-family:Inconsolata,monospace;font-size:10px;font-weight:700" fill="#111">' + (n + 1) + '</text>';
+  }
+  return s + '</svg>';
+}
+
 // ── Clock ────────────────────────────────────────────────────
 function tick() {
   const n = new Date();
@@ -1419,31 +1573,27 @@ window.addEventListener('load', () => {
         .sort((a, b) => a.getAttribute('data-t') - b.getAttribute('data-t'))
         .forEach(el => el.parentNode.appendChild(el));
     }
-    const list = nextEclipses(now, 4);
-    const kindName = { Total: 'Total', Annular: 'Annular', Hybrid: 'Hybrid', Partial: 'Partial', Penumbral: 'Penumbral' };
-    document.getElementById('eclipse-rows').innerHTML = list.length ? list.map(e => {
-      const when = eclipseGreatest(e), solar = e[0] === 'S';
-      let sub = 'in ' + fmtAway(when, now), lon;
-      if (solar) {
-        if (e[3] === 'Total' || e[3] === 'Annular' || e[3] === 'Hybrid') sub += ' · ' + e[3].toLowerCase() + ' for up to ' + e[5].replace('m', ' min ').replace('s', ' s') + ' along ' + e[6];
-        else sub += ' · seen from ' + e[6];
-        const l = londonSolarEclipse(when);
-        lon = l ? 'From London: ' + Math.round(l.cover * 100) + '% of the Sun covered, at its most ' + fmtClock(l.when) + (l.sunAlt < 5 ? ', with the Sun low in the sky' : '') : 'From London: not visible';
-      } else {
-        sub += ' · seen from ' + e[6];
-        const v = lunarEclipseFromLondon(e);
-        lon = v === 'all' ? 'From London: visible' : (v === 'part' ? 'From London: partly visible, the Moon rises or sets during it' : 'From London: not visible, the Moon is below the horizon');
-        if (e[3] === 'Penumbral' && v !== 'none') lon += ' (a faint shading only)';
-      }
-      return '<div class="event"><span class="moon-dot ecl ' + (solar ? 'solar' : 'lunar') + '"></span><div class="event-text">' +
-        '<div class="event-name">' + fmtWhen(when) + ' · ' + kindName[e[3]].toUpperCase() + (solar ? ' SOLAR' : ' LUNAR') + ' ECLIPSE</div>' +
-        '<div class="event-days">' + sub + '</div><div class="event-lon">' + lon + '</div></div></div>';
-    }).join('') : '<div class="event-days">The eclipse table runs to 2040 and needs extending.</div>';
     const km = moonDistance(jd), width = 2 * Math.asin(1737.4 / km) * 180 / Math.PI * 60;
     setText('d-size', width.toFixed(1) + '′ (' + (width / 60).toFixed(2) + '°)');
     const peri = nextDistanceExtreme(now, true), apo = nextDistanceExtreme(now, false);
     if (peri) { setText('d-perigee-when', fmtWhen(peri.date)); setText('d-perigee-in', 'Closest approach · ' + fmtKm(peri.km) + ' · in ' + fmtAway(peri.date, now)); }
     if (apo) { setText('d-apogee-when', fmtWhen(apo.date)); setText('d-apogee-in', 'Farthest point · ' + fmtKm(apo.km) + ' · in ' + fmtAway(apo.date, now)); }
+  }
+
+  function renderEclipses(now) {
+    document.getElementById('eclipse-cards').innerHTML = nextEclipses(now, 4).map((e, i) => eclipseCardHtml(e, i + 1, now)).join('') ||
+      '<div class="cap">The eclipse table runs to 2040 and needs extending.</div>';
+    document.getElementById('eclipse-timeline').innerHTML = eclipseTimelineSvg(now);
+  }
+  // London's view of every eclipse is worked out a little at a time so the page stays responsive
+  function warmLondonViews(now) {
+    const todo = nextEclipses(now, 100).filter(e => !((e[0] + e[1]) in londonViews));
+    (function next() {
+      const e = todo.shift();
+      if (!e) { renderEclipses(new Date()); fitPages(); return; }
+      londonView(e);
+      setTimeout(next, 0);
+    })();
   }
 
   function renderSolar(now) {
@@ -1465,11 +1615,13 @@ window.addEventListener('load', () => {
     tick();
     renderMoon(now, bust);
     renderDetails(now);
+    if (bust || minutes % 60 === 0) renderEclipses(now);
     if (bust || minutes % 5 === 0) renderSolar(now);
     if (typeof fitPages === 'function') fitPages();
   }
   tick();
   everything(false);
+  warmLondonViews(new Date());
   document.fonts.ready.then(() => { fitTime(); fitPages(); });
   setInterval(() => { minutes++; everything(false); }, 60000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') everything(true); });
@@ -1503,6 +1655,7 @@ window.addEventListener('load', () => {
     const on = nearestPage();
     Array.prototype.forEach.call(dotsEl.children, (d, i) => { d.className = 'dot-btn' + (i === on ? ' on' : ''); });
   }
+  const SNAP_WAIT_MS = 60, SNAP_GLIDE_MS = 200; // how long to wait after scrolling stops, and how long the glide takes
   let glide = null, gliding = false;
   function stopGlide() { if (glide) { clearInterval(glide); glide = null; } gliding = false; }
   function glideTo(y, ms) {
@@ -1513,25 +1666,28 @@ window.addEventListener('load', () => {
     gliding = true; // our own scrolling must not count as the user scrolling
     glide = setInterval(() => {
       const p = Math.min(1, (Date.now() - t0) / ms);
-      window.scrollTo(0, from + dist * (p * p * (3 - 2 * p)));
+      const eased = 1 - Math.pow(1 - p, 3); // starts fast, settles gently
+      window.scrollTo(0, from + dist * eased);
       if (p === 1) { clearInterval(glide); glide = null; setTimeout(() => { gliding = false; markDots(); }, 80); }
     }, 16);
   }
   pages.forEach((p, i) => {
     const b = document.createElement('span');
     b.className = 'dot-btn';
-    b.addEventListener('click', () => glideTo(topOf(pages[i]), 450));
+    b.addEventListener('click', () => glideTo(topOf(pages[i]), 320));
     dotsEl.appendChild(b);
   });
 
+  // Two quiet minutes by default; add ?idle=3 to the address to make it three seconds, for testing
+  const IDLE_MS = (window.URLSearchParams && +new URLSearchParams(location.search).get('idle') * 1000) || 120000;
   let snapTimer = null, idleTimer = null, touching = false;
   function snapSoon() {
     clearTimeout(snapTimer);
-    snapTimer = setTimeout(() => { if (!touching && !gliding) glideTo(topOf(pages[nearestPage()]), 300); }, 170);
+    snapTimer = setTimeout(() => { if (!touching && !gliding) glideTo(topOf(pages[nearestPage()]), SNAP_GLIDE_MS); }, SNAP_WAIT_MS);
   }
   function userActive() {
     clearTimeout(idleTimer);
-    if (window.pageYOffset > 20) idleTimer = setTimeout(() => glideTo(0, 800), 120000); // two quiet minutes: back to page one
+    if (window.pageYOffset > 20) idleTimer = setTimeout(() => glideTo(0, 800), IDLE_MS); // quiet for a while: back to page one
   }
   window.addEventListener('scroll', () => {
     if (gliding) return;
