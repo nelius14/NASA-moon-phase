@@ -1655,6 +1655,7 @@ window.addEventListener('load', () => {
     const on = nearestPage();
     Array.prototype.forEach.call(dotsEl.children, (d, i) => { d.className = 'dot-btn' + (i === on ? ' on' : ''); });
   }
+  const SNAP_WAIT_MS = 60, SNAP_GLIDE_MS = 200; // how long to wait after scrolling stops, and how long the glide takes
   let glide = null, gliding = false;
   function stopGlide() { if (glide) { clearInterval(glide); glide = null; } gliding = false; }
   function glideTo(y, ms) {
@@ -1665,21 +1666,22 @@ window.addEventListener('load', () => {
     gliding = true; // our own scrolling must not count as the user scrolling
     glide = setInterval(() => {
       const p = Math.min(1, (Date.now() - t0) / ms);
-      window.scrollTo(0, from + dist * (p * p * (3 - 2 * p)));
+      const eased = 1 - Math.pow(1 - p, 3); // starts fast, settles gently
+      window.scrollTo(0, from + dist * eased);
       if (p === 1) { clearInterval(glide); glide = null; setTimeout(() => { gliding = false; markDots(); }, 80); }
     }, 16);
   }
   pages.forEach((p, i) => {
     const b = document.createElement('span');
     b.className = 'dot-btn';
-    b.addEventListener('click', () => glideTo(topOf(pages[i]), 450));
+    b.addEventListener('click', () => glideTo(topOf(pages[i]), 320));
     dotsEl.appendChild(b);
   });
 
   let snapTimer = null, idleTimer = null, touching = false;
   function snapSoon() {
     clearTimeout(snapTimer);
-    snapTimer = setTimeout(() => { if (!touching && !gliding) glideTo(topOf(pages[nearestPage()]), 300); }, 170);
+    snapTimer = setTimeout(() => { if (!touching && !gliding) glideTo(topOf(pages[nearestPage()]), SNAP_GLIDE_MS); }, SNAP_WAIT_MS);
   }
   function userActive() {
     clearTimeout(idleTimer);
