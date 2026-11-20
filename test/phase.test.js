@@ -9,8 +9,8 @@ const html = fs.readFileSync(process.env.INDEX_HTML || path.join(__dirname, '..'
 const script = html.match(/<script>([\s\S]*?)<\/script>/)[1].split('// ── UI')[0];
 const ctx = {};
 vm.createContext(ctx);
-vm.runInContext(script + ';this.api={elongation,toJD,moonData,phaseName,frameUrl,nextPhaseEvent,moonDistance,nextDistanceExtreme,lunation,distanceExtremes,planetPosition,planetSky,skyKind,PLANETS,nextRiseSet,topocentricMoonSun,londonSolarEclipse,lunarEclipseFromLondon,nextEclipses,eclipseGreatest,ECLIPSES,moonIconShape}', ctx);
-const { elongation, toJD, moonData, phaseName, frameUrl, nextPhaseEvent, moonDistance, nextDistanceExtreme, lunation, distanceExtremes, planetPosition, planetSky, skyKind, PLANETS, nextRiseSet, topocentricMoonSun, londonSolarEclipse, lunarEclipseFromLondon, nextEclipses, eclipseGreatest, ECLIPSES, moonIconShape } = ctx.api;
+vm.runInContext(script + ';this.api={elongation,toJD,moonData,phaseName,frameUrl,nextPhaseEvent,moonDistance,nextDistanceExtreme,lunation,distanceExtremes,planetPosition,planetSky,skyKind,PLANETS,nextRiseSet,topocentricMoonSun,londonSolarEclipse,lunarEclipseFromLondon,nextEclipses,eclipseGreatest,ECLIPSES,moonIconShape,solarEclipseShape,lunarEclipseShape,londonView}', ctx);
+const { elongation, toJD, moonData, phaseName, frameUrl, nextPhaseEvent, moonDistance, nextDistanceExtreme, lunation, distanceExtremes, planetPosition, planetSky, skyKind, PLANETS, nextRiseSet, topocentricMoonSun, londonSolarEclipse, lunarEclipseFromLondon, nextEclipses, eclipseGreatest, ECLIPSES, moonIconShape, solarEclipseShape, lunarEclipseShape, londonView } = ctx.api;
 
 // [label, UTC time, expected elongation in degrees]
 const events = [
@@ -156,3 +156,17 @@ assert(gibbous.waxing && gibbous.lit > 0.75 && gibbous.terminator < 0, 'waxing g
 assert(!waning.waxing && Math.abs(waning.lit - 0.5) < 1e-9, 'last quarter lights the left half');
 assert(moonIconShape(0).lit < 1e-9 && moonIconShape(180).lit > 1 - 1e-9, 'new is dark, full is lit');
 console.log('ok   moon icon shapes');
+
+// Eclipse pictures: how the discs sit at the greatest eclipse
+const tot = solarEclipseShape('Total', '1.039'), ann = solarEclipseShape('Annular', '0.963'), par = solarEclipseShape('Partial', '0.871');
+assert(tot.central && tot.d === 0 && tot.rm > 1, 'a total eclipse has the Moon slightly bigger than the Sun, centred');
+assert(ann.central && ann.d === 0 && ann.rm < 1, 'an annular eclipse has the Moon slightly smaller, centred');
+assert(!par.central && Math.abs(par.d - 0.258) < 1e-9, 'a partial eclipse of magnitude 0.871 puts the centres 0.258 Sun radii apart');
+const lt = lunarEclipseShape('Total', '1.151'), lp = lunarEclipseShape('Partial', '0.930');
+assert(lt.d + 1 <= 2.65, 'in a total lunar eclipse the whole Moon is inside the shadow');
+assert(lp.d + 1 > 2.65 && lp.d < 2.65 + 1, 'in a partial one the Moon is only partly inside');
+assert(lunarEclipseShape('Penumbral', '-0.057').penumbral, 'penumbral eclipses have no dark shadow');
+// London's view of the next solar eclipse is remembered after the first look
+const first = londonView(ECLIPSES[0]);
+assert(londonView(ECLIPSES[0]) === first, 'London views are cached');
+console.log('ok   eclipse picture shapes and cached London views');
